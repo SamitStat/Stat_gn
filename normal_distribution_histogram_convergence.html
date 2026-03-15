@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>N(3,1) Histogram Convergence to PDF</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: #fff; color: #1a1a1a; padding: 2rem; max-width: 860px; margin: 0 auto; }
+  h2 { font-size: 18px; font-weight: 500; margin-bottom: 0.4rem; }
+  .subtitle { font-size: 14px; color: #666; margin-bottom: 1.5rem; line-height: 1.6; }
+  .controls { display: flex; gap: 24px; flex-wrap: wrap; margin-bottom: 1.5rem; align-items: flex-end; }
+  .control-group { flex: 1; min-width: 200px; }
+  label { font-size: 13px; color: #555; display: block; margin-bottom: 6px; }
+  label span { font-weight: 500; color: #1a1a1a; }
+  input[type=range] { width: 100%; accent-color: #3781c4; cursor: pointer; }
+  .tick-labels { display: flex; justify-content: space-between; font-size: 11px; color: #999; margin-top: 3px; }
+  .legend { display: flex; gap: 16px; margin-bottom: 12px; font-size: 12px; color: #666; flex-wrap: wrap; }
+  .legend-item { display: flex; align-items: center; gap: 6px; }
+  .swatch-bar { width: 12px; height: 12px; border-radius: 2px; background: rgba(55,129,196,0.6); }
+  .swatch-line { width: 24px; height: 2px; background: #c94040; }
+  .swatch-dot { width: 12px; height: 12px; border-radius: 50%; background: #e09a20; }
+  .chart-wrap { position: relative; width: 100%; height: 340px; }
+  #info-box { margin-top: 1rem; padding: 10px 14px; background: #f5f5f3; border-radius: 8px; font-size: 13px; color: #555; line-height: 1.6; }
+  .good { color: #2a7a3b; font-weight: 500; }
+  .ok   { color: #a06000; font-weight: 500; }
+  .bad  { color: #b33030; font-weight: 500; }
+
+  .explainer { margin-top: 2rem; border-top: 1px solid #e8e8e4; padding-top: 1.5rem; }
+  .explainer h3 { font-size: 15px; font-weight: 500; color: #1a1a1a; margin-bottom: 0.9rem; }
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 1.4rem; }
+  @media (max-width: 560px) { .two-col { grid-template-columns: 1fr; } }
+  .concept-card { background: #f9f8f6; border: 0.5px solid #dddbd3; border-radius: 8px; padding: 14px 16px; }
+  .concept-card .card-head { font-size: 13px; font-weight: 500; color: #1a1a1a; margin-bottom: 4px; display: flex; align-items: center; gap: 8px; }
+  .concept-card .card-body { font-size: 13px; color: #555; line-height: 1.65; }
+  .tag { font-size: 10px; font-weight: 500; padding: 2px 7px; border-radius: 20px; letter-spacing: 0.03em; }
+  .tag-disc { background: #ddeaf7; color: #1a5f9e; }
+  .tag-cont { background: #fdecd5; color: #8a4a05; }
+  .key-insight { background: #f0f7ee; border-left: 3px solid #4a9a5a; border-radius: 0 8px 8px 0; padding: 12px 16px; margin-bottom: 1.4rem; font-size: 13px; color: #2a4a2e; line-height: 1.7; }
+  .key-insight strong { color: #1a3a1e; }
+  .steps-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin-bottom: 1.4rem; }
+  .step-card { background: #fff; border: 0.5px solid #dddbd3; border-radius: 8px; padding: 12px 14px; text-align: center; }
+  .step-card .step-icon { font-size: 22px; margin-bottom: 6px; }
+  .step-card .step-title { font-size: 12px; font-weight: 500; color: #1a1a1a; margin-bottom: 3px; }
+  .step-card .step-desc { font-size: 11px; color: #777; line-height: 1.55; }
+  .step-arrow { display: flex; align-items: center; justify-content: center; font-size: 18px; color: #bbb; padding-top: 20px; }
+  .what-plot-shows { margin-bottom: 1.4rem; }
+  .what-plot-shows p { font-size: 13px; color: #555; line-height: 1.7; margin-bottom: 0.6rem; }
+  .inline-swatch { display: inline-block; width: 10px; height: 10px; border-radius: 2px; vertical-align: middle; position: relative; top: -1px; }
+  .notation-row { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 0.8rem; }
+  .notation-pill { background: #f5f5f3; border: 0.5px solid #dddbd3; border-radius: 20px; padding: 4px 12px; font-size: 12px; color: #444; }
+  .notation-pill code { font-family: "SFMono-Regular", Consolas, monospace; font-size: 11px; color: #1a5f9e; }
+</style>
+</head>
+<body>
+<h2>Histogram convergence to the true PDF — N(3, 1)</h2>
+<p class="subtitle">
+  As you draw more samples and use thinner bars, the histogram approaches the smooth bell curve.
+  The tallest bar converges to the PDF peak at x = 3.
+</p>
+
+<div class="controls">
+  <div class="control-group">
+    <label>Number of samples: <span id="n-label">500</span></label>
+    <input type="range" min="0" max="5" step="1" value="1" id="n-slider">
+    <div class="tick-labels"><span>50</span><span>500</span><span>2k</span><span>10k</span><span>50k</span><span>500k</span></div>
+  </div>
+  <div class="control-group">
+    <label>Bar width (bins): <span id="b-label">20</span></label>
+    <input type="range" min="0" max="4" step="1" value="1" id="b-slider">
+    <div class="tick-labels"><span>5</span><span>20</span><span>50</span><span>100</span><span>200</span></div>
+  </div>
+</div>
+
+<div class="legend">
+  <div class="legend-item"><div class="swatch-bar"></div> Histogram</div>
+  <div class="legend-item"><div class="swatch-line"></div> True PDF — N(3, 1)</div>
+  <div class="legend-item"><div class="swatch-dot"></div> Tallest bar (x ≈ 3)</div>
+</div>
+
+<div class="chart-wrap">
+  <canvas id="histChart"></canvas>
+</div>
+<div id="info-box"></div>
+
+<div class="explainer">
+
+  <h3>What is the "mode" — and what does this plot show?</h3>
+
+  <div class="two-col">
+    <div class="concept-card">
+      <div class="card-head"><span class="tag tag-disc">Discrete</span> Mode in a histogram</div>
+      <div class="card-body">
+        When data is binned into bars, the <strong>mode is the tallest bar</strong> — the bin that contains the most observations.
+        It is the most frequently occurring <em>range</em> of values, not a single number.
+        Here, the orange bar is always the tallest, and it sits near x = 3.
+        With fewer samples or wide bins, the tallest bar may wander slightly — that is sampling noise, not a property of the distribution.
+      </div>
+    </div>
+    <div class="concept-card">
+      <div class="card-head"><span class="tag tag-cont">Continuous</span> Mode of a PDF</div>
+      <div class="card-body">
+        For a continuous distribution, the <strong>mode is the x-value where the PDF reaches its peak</strong> — the highest point on the smooth curve.
+        For N(μ, σ²) the mode equals the mean μ.
+        Here μ = 3, so the red curve peaks exactly at x = 3.
+        Unlike the discrete case, this is a precise real number, not a bin.
+      </div>
+    </div>
+  </div>
+
+  <div class="key-insight">
+    <strong>The bridge between the two:</strong> As you increase the sample count and shrink the bin width simultaneously,
+    the discrete histogram mode (orange bar center) converges to the continuous PDF mode (peak of the red curve).
+    This is the Law of Large Numbers made visible — infinitely many infinitely thin bars <em>become</em> the smooth curve.
+  </div>
+
+  <h3>Reading this plot — step by step</h3>
+
+  <div class="steps-grid">
+    <div class="step-card">
+      <div class="step-icon">📊</div>
+      <div class="step-title">Blue bars = your data</div>
+      <div class="step-desc">Each bar height is a <em>density</em>: count ÷ (n × bin width). This rescales so the total area = 1, matching the PDF scale.</div>
+    </div>
+    <div class="step-card">
+      <div class="step-icon">🟠</div>
+      <div class="step-title">Orange bar = discrete mode</div>
+      <div class="step-desc">The tallest bar — the most populated bin. Watch it drift at low n, then lock onto x ≈ 3 as n grows.</div>
+    </div>
+    <div class="step-card">
+      <div class="step-icon">📈</div>
+      <div class="step-title">Red curve = ground truth</div>
+      <div class="step-desc">The true N(3,1) PDF. Its peak at x = 3 is the continuous mode. This is what the histogram is trying to approximate.</div>
+    </div>
+    <div class="step-card">
+      <div class="step-icon">🎯</div>
+      <div class="step-title">Info box = convergence gap</div>
+      <div class="step-desc">Shows how far the orange bar's height is from the red curve's peak. Push both sliders right to shrink this gap toward 0%.</div>
+    </div>
+  </div>
+
+  <h3>What to try — intuition builders</h3>
+
+  <div class="what-plot-shows">
+    <p>
+      <strong>Fix bins at 20, drag samples from 50 → 500k.</strong>
+      The bar heights stop jittering and the histogram shape stabilizes. The orange bar reliably centers near 3.
+      This shows that <em>more data reduces variance in the estimate</em> — the histogram is a better estimator with more observations.
+    </p>
+    <p>
+      <strong>Fix samples at 500k, drag bins from 5 → 200.</strong>
+      With 5 wide bins the histogram is a blocky approximation; with 200 thin bins it traces the bell almost perfectly.
+      This shows that <em>finer resolution reveals more shape</em> — but only works because there is enough data to populate each thin bin reliably.
+    </p>
+    <p>
+      <strong>Try 50 samples + 200 bins.</strong>
+      Most bars will be zero or near-zero with a few random spikes — completely wrong shape.
+      This is the bias–variance tradeoff: too many bins with too little data creates a noisy, unreliable estimate even though the resolution is high.
+    </p>
+    <p>
+      <strong>Notice the y-axis says "density", not "count".</strong>
+      Density = count ÷ (n × bin width). This normalization is what allows the histogram bars to align with the PDF curve —
+      both integrate to 1 over all x. If the y-axis showed raw counts, the bars would tower far above the red line.
+    </p>
+  </div>
+
+  <div class="notation-row">
+    <div class="notation-pill">Distribution: <code>N(μ=3, σ²=1)</code></div>
+    <div class="notation-pill">PDF peak (mode): <code>x = μ = 3</code></div>
+    <div class="notation-pill">Peak height: <code>1/(σ√2π) ≈ 0.3989</code></div>
+    <div class="notation-pill">Bar density: <code>count / (n · Δx)</code></div>
+    <div class="notation-pill">Area under PDF: <code>∫ f(x) dx = 1</code></div>
+  </div>
+
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script>
+const nOptions = [50, 500, 2000, 10000, 50000, 500000];
+const bOptions = [5, 20, 50, 100, 200];
+const mu = 3, sigma = 1;
+
+function randNorm() {
+  let u = 0, v = 0;
+  while (u === 0) u = Math.random();
+  while (v === 0) v = Math.random();
+  return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v);
+}
+
+function pdf(x) {
+  return (1 / (sigma * Math.sqrt(2 * Math.PI))) * Math.exp(-0.5 * ((x - mu) / sigma) ** 2);
+}
+
+let samples = [];
+let chart = null;
+
+function ensureSamples(n) {
+  while (samples.length < n) samples.push(mu + sigma * randNorm());
+}
+
+function buildChart(n, bins) {
+  ensureSamples(n);
+  const used = samples.slice(0, n);
+  const xMin = -1, xMax = 7;
+  const binWidth = (xMax - xMin) / bins;
+  const counts = new Array(bins).fill(0);
+  for (const s of used) {
+    const idx = Math.floor((s - xMin) / binWidth);
+    if (idx >= 0 && idx < bins) counts[idx]++;
+  }
+  const densities = counts.map(c => c / (n * binWidth));
+  const barLabels = counts.map((_, i) => +(xMin + (i + 0.5) * binWidth).toFixed(2));
+  const pdfX = [], pdfY = [];
+  for (let x = xMin; x <= xMax; x += 0.05) {
+    pdfX.push(+x.toFixed(2));
+    pdfY.push(+pdf(x).toFixed(5));
+  }
+  const maxDensity = Math.max(...densities);
+  const tallestIdx = densities.indexOf(maxDensity);
+  const tallestCenter = barLabels[tallestIdx];
+  const barColors = densities.map((_, i) => i === tallestIdx ? 'rgba(224,154,32,0.85)' : 'rgba(55,129,196,0.55)');
+  const barBorders = densities.map((_, i) => i === tallestIdx ? '#c47d08' : '#1a5f9e');
+  const pdfPoints = pdfX.map((x, i) => ({ x, y: pdfY[i] }));
+  const barPoints = barLabels.map((x, i) => ({ x, y: +densities[i].toFixed(5) }));
+  if (chart) chart.destroy();
+  chart = new Chart(document.getElementById('histChart'), {
+    data: {
+      datasets: [
+        {
+          type: 'bar', label: 'Histogram density', data: barPoints,
+          backgroundColor: barColors, borderColor: barBorders, borderWidth: 1,
+          barPercentage: 1.0, categoryPercentage: 1.0, order: 2
+        },
+        {
+          type: 'line', label: 'True PDF', data: pdfPoints,
+          borderColor: '#c94040', borderWidth: 2.5,
+          pointRadius: 0, tension: 0.4, fill: false, order: 1
+        }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false }, tooltip: { mode: 'nearest', intersect: false } },
+      scales: {
+        x: {
+          type: 'linear', min: xMin, max: xMax,
+          title: { display: true, text: 'x', color: '#888', font: { size: 12 } },
+          ticks: { stepSize: 1, color: '#888' },
+          grid: { color: 'rgba(128,128,128,0.1)' }
+        },
+        y: {
+          title: { display: true, text: 'density', color: '#888', font: { size: 12 } },
+          ticks: { color: '#888', callback: v => v.toFixed(2) },
+          grid: { color: 'rgba(128,128,128,0.1)' }
+        }
+      }
+    }
+  });
+  const pdfPeak = pdf(mu).toFixed(4);
+  const barPeak = maxDensity.toFixed(4);
+  const pct = (100 * Math.abs(maxDensity - pdf(mu)) / pdf(mu)).toFixed(1);
+  const qualClass = pct < 3 ? 'good' : pct < 10 ? 'ok' : 'bad';
+  const qualText = pct < 3 ? 'very close' : pct < 10 ? 'reasonably close' : 'still rough';
+  document.getElementById('info-box').innerHTML =
+    `<strong>Tallest bar</strong> centered at x = ${tallestCenter.toFixed(2)} (true mean = ${mu}). ` +
+    `Bar height = <strong>${barPeak}</strong> vs PDF peak = <strong>${pdfPeak}</strong> — off by ${pct}%. ` +
+    `With ${n.toLocaleString()} samples and ${bins} bins, the histogram is ` +
+    `<span class="${qualClass}">${qualText}</span> to the true PDF.`;
+}
+
+function update() {
+  const n = nOptions[+document.getElementById('n-slider').value];
+  const b = bOptions[+document.getElementById('b-slider').value];
+  document.getElementById('n-label').textContent = n.toLocaleString();
+  document.getElementById('b-label').textContent = b;
+  buildChart(n, b);
+}
+
+document.getElementById('n-slider').addEventListener('input', update);
+document.getElementById('b-slider').addEventListener('input', update);
+update();
+</script>
+</body>
+</html>
