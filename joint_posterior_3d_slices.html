@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Joint Posterior 3D — Interactive Slices</title>
+  <script src="https://cdn.jsdelivr.net/npm/plotly.js-dist@2.26.0/plotly.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+  <style>
+    body { font-family: sans-serif; background: #fff; margin: 20px; color: #333; max-width: 960px; }
+    h2   { font-size: 16px; font-weight: 500; color: #0C447C; margin-bottom: 4px; }
+    p.sub{ font-size: 13px; color: #888; margin: 0 0 16px; }
+    .tb  { background: transparent; border: 0.5px solid #ccc; border-radius: 8px;
+           padding: 6px 16px; font-size: 13px; cursor: pointer; margin-right: 8px; }
+    .tb.on { background: #f0f0f0; font-weight: 600; border-color: #888; }
+    .slider-row { display:flex; align-items:center; gap:12px; margin: 12px 0; font-size:13px; color:#555; }
+    .slider-row input { flex:1; }
+    .slider-row span.val { min-width:44px; font-weight:600; color:#111; }
+    .main  { display:flex; gap:12px; flex-wrap:wrap; }
+    .note  { border-radius:8px; padding:10px 14px; font-size:12px; line-height:1.7; margin-top:10px; }
+    .note.blue  { background:#E6F1FB; border:0.5px solid #85B7EB; color:#185FA5; }
+    .note.amber { background:#FAEEDA; border:0.5px solid #EF9F27; color:#854F0B; }
+    .note b { display:block; margin-bottom:2px; }
+  </style>
+</head>
+<body>
+
+<h2>Joint posterior p(β, σ² | y, X) — Case 5.4 Bayesian Linear Regression</h2>
+<p class="sub">Interactive 3D surface with horizontal and vertical slices. Drag the 3D plot to rotate. Use the slider to move the slice.</p>
+
+<div style="margin-bottom:12px;">
+  <button class="tb on" id="btnH" onclick="setMode('h')">Horizontal slice — fix σ²</button>
+  <button class="tb"    id="btnV" onclick="setMode('v')">Vertical slice — fix β</button>
+</div>
+
+<div class="slider-row">
+  <span id="slLabel">Fix σ² =</span>
+  <input type="range" id="sl" min="0" max="20" value="5" step="1">
+  <span class="val" id="slVal">0.73</span>
+</div>
+
+<div class="main">
+  <div id="p3d" style="flex:1;min-width:320px;height:420px;"></div>
+  <div style="flex:1;min-width:280px;display:flex;flex-direction:column;gap:10px;">
+    <div style="position:relative;height:220px;"><canvas id="cslice"></canvas></div>
+    <div class="note blue" id="noteBox">
+      <b id="noteTitle">Horizontal slice at σ² = 0.73</b>
+      <span id="noteBody">Cut the 3D mountain at this σ² level. The red line on the surface IS the cross-section. The chart above shows its shape — a <b>Normal bell for β</b>. Smaller σ² = narrower bell (less noise = more confident about β).</span>
+    </div>
+  </div>
+</div>
+
+<div style="margin-top:16px;border-radius:8px;padding:10px 14px;font-size:12px;line-height:1.7;background:#F1EFE8;border:0.5px solid #B4B2A9;color:#444;">
+  <b style="color:#333;">Reading the plot:</b>
+  The 3D surface height = probability density p(β, σ² | y, X).
+  A <b>horizontal slice</b> (fix σ², vary β) cuts a bell-shaped cross-section → Normal for β.
+  A <b>vertical slice</b> (fix β, vary σ²) cuts a skewed cross-section → Inv-Gamma for σ².
+  Integrating out σ² from the full surface → Student-t marginal for β.
+</div>
+
+<script>
+function ls(a,b,n){const r=[];for(let i=0;i<n;i++)r.push(+(a+(b-a)*i/(n-1)).toFixed(3));return r;}
+function norm(x,mu,s2){return Math.exp(-0.5*(x-mu)*(x-mu)/s2)/Math.sqrt(2*Math.PI*s2);}
+function ig(s2,a,b){if(s2<=0)return 0;return Math.pow(b,a)*Math.pow(s2,-a-1)*Math.exp(-b/s2);}
+function nrm(arr){const mx=Math.max(...arr)||1;return arr.map(v=>v/mx);}
+
+const NB=50,NS=50;
+const bMin=-2.5,bMax=2.5,sMin=0.05,sMax=3.5;
+const n=10,a0=3,b0=2,m0=0.8,v0=1;
+const bArr=ls(bMin,bMax,NB), sArr=ls(sMin,sMax,NS);
+
+function logPost(b,s2){
+  if(s2<=0)return -Infinity;
+  const rss=3+(b-m0)*(b-m0)*3;
+  return -n/2*Math.log(s2)-rss/(2*s2)
+        -0.5*(b-m0)*(b-m0)/(s2*v0)-0.5*Math.log(s2)
+        -(a0+1)*Math.log(s2)-b0/s2;
+}
+let mx=-Infinity;
+const raw=[];
+for(let j=0;j<NS;j++){
+  const row=[];
+  for(let i=0;i<NB;i++){const lv=logPost(bArr[i],sArr[j]);row.push(lv);if(lv>mx)mx=lv;}
+  raw.push(row);
+}
+const zGrid=raw.map(row=>row.map(v=>Math.exp(v-mx)));
+
+const surface={
+  type:'surface',x:bArr,y:sArr,z:zGrid,
+  colorscale:[[0,'#E6F1FB'],[0.2,'#85B7EB'],[0.5,'#378ADD'],[0.75,'#185FA5'],[1,'#042C53']],
+  showscale:false,opacity:0.9,
+  contours:{z:{show:true,usecolormap:true,project:{z:true}}}
+};
+
+const layout={
+  margin:{l:0,r:0,t:10,b:0},
+  paper_bgcolor:'#fff',
+  scene:{
+    xaxis:{title:{text:'β'},gridcolor:'#ddd'},
+    yaxis:{title:{text:'σ²'},gridcolor:'#ddd'},
+    zaxis:{title:{text:'p(β,σ²|y,X)'},gridcolor:'#ddd'},
+    camera:{eye:{x:1.6,y:-1.8,z:1.2}},
+    bgcolor:'#fff'
+  }
+};
+
+Plotly.newPlot('p3d',[surface],layout,{responsive:true,displayModeBar:false});
+
+const s2Opts=ls(0.15,3.2,21), bOpts=ls(-2.0,2.0,21);
+let mode='h';
+
+const ctx=document.getElementById('cslice').getContext('2d');
+const sliceChart=new Chart(ctx,{
+  type:'line',
+  data:{
+    labels:bArr.map(v=>v.toFixed(1)),
+    datasets:[{
+      data:nrm(bArr.map(b=>norm(b,m0,s2Opts[5]))),
+      borderColor:'#E24B4A',backgroundColor:'rgba(226,75,74,0.15)',
+      fill:true,pointRadius:0,borderWidth:2.5
+    }]
+  },
+  options:{
+    responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{display:false},
+      title:{display:true,text:'Cross-section → Normal bell for β',font:{size:11},color:'#888',padding:{bottom:4}}},
+    scales:{
+      x:{title:{display:true,text:'β',font:{size:11}},grid:{color:'rgba(128,128,128,0.08)'},ticks:{font:{size:10}}},
+      y:{title:{display:true,text:'density',font:{size:11}},min:0,grid:{color:'rgba(128,128,128,0.08)'},ticks:{font:{size:10}}}
+    },
+    animation:{duration:200}
+  }
+});
+
+function addSlicePlane(mode,val){
+  let trace;
+  if(mode==='h'){
+    const zSlice=bArr.map(b=>Math.exp(logPost(b,val)-mx));
+    trace={type:'scatter3d',mode:'lines',x:bArr,y:Array(NB).fill(val),z:zSlice,
+           line:{color:'#E24B4A',width:6},name:'slice'};
+  } else {
+    const zSlice=sArr.map(s=>Math.exp(logPost(val,s)-mx));
+    trace={type:'scatter3d',mode:'lines',x:Array(NS).fill(val),y:sArr,z:zSlice,
+           line:{color:'#185FA5',width:6},name:'slice'};
+  }
+  Plotly.react('p3d',[surface,trace],layout,{responsive:true,displayModeBar:false});
+}
+
+addSlicePlane('h',s2Opts[5]);
+
+document.getElementById('sl').oninput=function(){
+  const idx=+this.value;
+  if(mode==='h'){
+    const s2=s2Opts[idx];
+    document.getElementById('slVal').textContent=s2.toFixed(2);
+    addSlicePlane('h',s2);
+    sliceChart.data.labels=bArr.map(v=>v.toFixed(1));
+    sliceChart.data.datasets[0].data=nrm(bArr.map(b=>norm(b,m0,s2)));
+    sliceChart.data.datasets[0].borderColor='#E24B4A';
+    sliceChart.data.datasets[0].backgroundColor='rgba(226,75,74,0.15)';
+    sliceChart.options.plugins.title.text=`Cross-section at σ²=${s2.toFixed(2)} → Normal bell for β`;
+    sliceChart.options.scales.x.title.text='β';
+    sliceChart.update();
+    document.getElementById('noteTitle').textContent=`Horizontal slice at σ² = ${s2.toFixed(2)}`;
+    document.getElementById('noteBody').innerHTML=`Cut the 3D mountain at this σ² level. The red line on the surface IS the cross-section. The chart above shows its shape — a <b>Normal bell for β</b>. Smaller σ² = narrower bell (less noise = more confident about β).`;
+  } else {
+    const bv=bOpts[idx];
+    document.getElementById('slVal').textContent=bv.toFixed(2);
+    addSlicePlane('v',bv);
+    const rss=3+(bv-m0)*(bv-m0)*3;
+    sliceChart.data.labels=sArr.map(v=>v.toFixed(2));
+    sliceChart.data.datasets[0].data=nrm(sArr.map(s=>ig(s,a0+n/2,b0+rss/2)));
+    sliceChart.data.datasets[0].borderColor='#185FA5';
+    sliceChart.data.datasets[0].backgroundColor='rgba(24,95,165,0.15)';
+    sliceChart.options.plugins.title.text=`Cross-section at β=${bv.toFixed(2)} → Inv-Gamma for σ²`;
+    sliceChart.options.scales.x.title.text='σ²';
+    sliceChart.update();
+    document.getElementById('noteTitle').textContent=`Vertical slice at β = ${bv.toFixed(2)}`;
+    document.getElementById('noteBody').innerHTML=`Cut the 3D mountain at this β value. The blue line on the surface IS the cross-section. The chart above shows its shape — a <b>skewed Inv-Gamma for σ²</b>. Shifts right when β is far from the data (higher residuals → higher noise estimate).`;
+  }
+};
+
+function setMode(m){
+  mode=m;
+  document.getElementById('btnH').className=m==='h'?'tb on':'tb';
+  document.getElementById('btnV').className=m==='v'?'tb on':'tb';
+  document.getElementById('slLabel').textContent=m==='h'?'Fix σ² =':'Fix β =';
+  document.getElementById('sl').value=10;
+  document.getElementById('sl').oninput.call(document.getElementById('sl'));
+  const nb=document.getElementById('noteBox');
+  nb.className='note '+(m==='h'?'blue':'amber');
+}
+</script>
+</body>
+</html>
