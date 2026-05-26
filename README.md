@@ -9,6 +9,7 @@ probability and inference intuitive through hands-on exploration.
 |------|-------------|
 | [Histogram → PDF Convergence](https://samitstat.github.io/Stat_gn/nd_to_hist.html) | Histogram converge to the true normal PDF. Mode in discrete vs. continuous. |
 | [Joint Posterior 3D Slices](https://samitstat.github.io/Stat_gn/) | Interactive 3D visualization of a joint posterior distribution. |
+| [Expected value vs Sample mean](https://samitstat.github.io/Stat_gn/expected_value_vs_mean.html) | Sample mean vs population mean vs expectation; frequentist vs Bayesian. |
 
 ## About
 
