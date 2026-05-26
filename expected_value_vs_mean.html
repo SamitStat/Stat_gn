@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Expected Value vs Mean — Watch the Law of Large Numbers</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root, [data-theme="light"] {
+    --bg:#F7F7F5; --card:#FFFFFF; --card2:#FBFAF8; --border:#E6E4DF;
+    --text:#1A1F26; --text2:#5C6470; --text3:#8A929E;
+    --truth:#0072B2; --data:#D55E00; --current:#E69F00; --good:#009E73; --warn:#B5790B;
+    --grid:rgba(20,30,40,0.06); --band:rgba(0,114,178,0.10); --ghost:rgba(213,94,0,0.16);
+    --hero1:#0072B2; --hero2:#023E6B; --on-hero:#EAF4FB;
+    --shadow:0 1px 2px rgba(15,30,50,0.04), 0 10px 26px -10px rgba(15,30,50,0.13);
+    --tag-truth-bg:#DDEAF7; --tag-truth-fg:#0A5C9C;
+    --tag-model-bg:#D7EDDD; --tag-model-fg:#1E7A48;
+    --tag-data-bg:#FBE6D2; --tag-data-fg:#9A4A05;
+  }
+  [data-theme="dark"] {
+    --bg:#0E1116; --card:#181C22; --card2:#1E232B; --border:#272D36;
+    --text:#E8EAED; --text2:#9AA3AF; --text3:#6B7480;
+    --truth:#4DA8E0; --data:#FF8A4C; --current:#FFC24D; --good:#34C99A; --warn:#E0A23A;
+    --grid:rgba(255,255,255,0.07); --band:rgba(77,168,224,0.13); --ghost:rgba(255,138,76,0.16);
+    --hero1:#023E6B; --hero2:#061A2B; --on-hero:#D6E8F5;
+    --shadow:0 1px 2px rgba(0,0,0,0.4), 0 12px 30px -12px rgba(0,0,0,0.6);
+    --tag-truth-bg:#103A57; --tag-truth-fg:#8FC9F0;
+    --tag-model-bg:#103A2A; --tag-model-fg:#6FD9A3;
+    --tag-data-bg:#4A2A12; --tag-data-fg:#FFB87E;
+  }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  html { scroll-behavior:smooth; }
+  body {
+    font-family:'Inter',-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+    background:var(--bg); color:var(--text);
+    line-height:1.6; -webkit-font-smoothing:antialiased;
+    transition:background .3s ease, color .3s ease;
+  }
+  .wrap { max-width:1060px; margin:0 auto; padding:0 24px 64px; }
+  .prose { max-width:760px; }
+  .num { font-variant-numeric:tabular-nums; font-feature-settings:"tnum"; }
+  code, .mono { font-family:'JetBrains Mono','SFMono-Regular',Consolas,monospace; }
+
+  /* ---------- HERO ---------- */
+  .hero {
+    background:linear-gradient(135deg,var(--hero1) 0%,var(--hero2) 100%);
+    color:#fff; padding:46px 24px 40px; position:relative; overflow:hidden;
+  }
+  .hero-inner { max-width:1060px; margin:0 auto; padding:0 24px; }
+  .hero h1 { font-size:clamp(26px,4.2vw,38px); font-weight:800; letter-spacing:-.02em; line-height:1.15; margin-bottom:10px; }
+  .hero p { color:var(--on-hero); font-size:clamp(14px,1.6vw,17px); max-width:680px; }
+  .dramatis { display:flex; gap:10px; flex-wrap:wrap; margin-top:22px; }
+  .dramatis .glyph {
+    display:flex; align-items:baseline; gap:8px; background:rgba(255,255,255,.10);
+    border:1px solid rgba(255,255,255,.16); border-radius:12px; padding:9px 14px; backdrop-filter:blur(4px);
+  }
+  .dramatis .sym { font-size:20px; font-weight:700; }
+  .dramatis .who { font-size:11.5px; color:var(--on-hero); letter-spacing:.02em; }
+  .g-truth .sym{ color:#9CCDF0; } .g-model .sym{ color:#86E3B0; } .g-data .sym{ color:#FFC08A; }
+  .theme-toggle {
+    position:absolute; top:18px; right:max(18px,calc((100vw - 1060px)/2 + 24px));
+    background:rgba(255,255,255,.12); border:1px solid rgba(255,255,255,.22); color:#fff;
+    width:38px; height:38px; border-radius:10px; cursor:pointer; font-size:17px; line-height:1;
+    display:flex; align-items:center; justify-content:center; transition:background .2s;
+  }
+  .theme-toggle:hover { background:rgba(255,255,255,.22); }
+
+  /* ---------- CARDS ---------- */
+  .card { background:var(--card); border:1px solid var(--border); border-radius:18px; box-shadow:var(--shadow); padding:22px; margin-top:24px; }
+  .card-title { font-size:13px; font-weight:600; color:var(--text2); text-transform:uppercase; letter-spacing:.06em; margin-bottom:4px; }
+  .card-sub { font-size:13px; color:var(--text3); margin-bottom:14px; line-height:1.55; }
+
+  /* ---------- SEGMENTED CONTROL ---------- */
+  .segmented { display:inline-flex; background:var(--card2); border:1px solid var(--border); border-radius:14px; padding:4px; gap:4px; flex-wrap:wrap; }
+  .seg-btn { border:0; background:transparent; color:var(--text2); font:inherit; font-size:13.5px; font-weight:500;
+    padding:8px 15px; border-radius:10px; cursor:pointer; display:flex; align-items:center; gap:7px; transition:all .2s; }
+  .seg-btn .ex { font-size:11px; opacity:.7; }
+  .seg-btn:hover { color:var(--text); }
+  .seg-btn.active { background:var(--truth); color:#fff; box-shadow:0 2px 8px -2px var(--truth); }
+  .seg-btn.active .ex { opacity:.85; }
+
+  /* ---------- CONTROLS ---------- */
+  .controls { display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin:18px 0 6px; }
+  .btn { border:1px solid var(--border); background:var(--card); color:var(--text); font:inherit; font-size:13.5px; font-weight:500;
+    padding:9px 16px; border-radius:11px; cursor:pointer; transition:all .15s; display:inline-flex; align-items:center; gap:7px; }
+  .btn:hover { border-color:var(--truth); transform:translateY(-1px); }
+  .btn:active { transform:translateY(0); }
+  .btn-primary { background:var(--data); border-color:var(--data); color:#fff; font-weight:600; padding:9px 20px; }
+  .btn-primary:hover { box-shadow:0 4px 14px -4px var(--data); border-color:var(--data); }
+  .speed-wrap { display:flex; align-items:center; gap:8px; font-size:12.5px; color:var(--text2); margin-left:auto; }
+  .speed-wrap input { accent-color:var(--data); cursor:pointer; width:90px; }
+  .jump-row { display:flex; align-items:center; gap:12px; margin-top:14px; font-size:12.5px; color:var(--text2); }
+  .jump-row input[type=range] { flex:1; accent-color:var(--truth); cursor:pointer; }
+  .jump-row .jv { min-width:62px; font-weight:600; color:var(--text); text-align:right; }
+
+  /* ---------- STAT CARDS ---------- */
+  .stats { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin:20px 0; }
+  @media (max-width:620px){ .stats { grid-template-columns:repeat(2,1fr); } }
+  .stat { background:var(--card2); border:1px solid var(--border); border-radius:14px; padding:13px 15px; position:relative; transition:background .3s; }
+  .stat .lbl { font-size:10.5px; font-weight:600; letter-spacing:.06em; text-transform:uppercase; color:var(--text3); display:flex; align-items:center; gap:6px; }
+  .stat .val { font-size:clamp(26px,3.4vw,34px); font-weight:700; line-height:1.15; margin-top:5px; }
+  .stat.s-ex  .val{ color:var(--truth); } .stat.s-xbar .val{ color:var(--data); }
+  .stat .dotmark{ width:9px; height:9px; border-radius:50%; display:inline-block; }
+  .stat.flash { background:color-mix(in srgb, var(--data) 14%, var(--card2)); }
+
+  /* ---------- CHART ---------- */
+  .legend { display:flex; gap:16px; flex-wrap:wrap; font-size:12px; color:var(--text2); margin-bottom:10px; }
+  .legend-item { display:flex; align-items:center; gap:7px; }
+  .sw { width:16px; height:3px; border-radius:2px; } .sw.dot{ width:11px; height:11px; border-radius:50%; }
+  .sw.box{ width:13px; height:13px; border-radius:3px; }
+  .chart-wrap { position:relative; width:100%; }
+  .chart-wrap.tall { height:340px; } .chart-wrap.short { height:240px; }
+  .caption { margin-top:14px; padding:11px 15px; border-radius:11px; background:var(--card2); border:1px solid var(--border);
+    font-size:13px; color:var(--text2); line-height:1.6; min-height:42px; transition:background .3s; }
+  .caption b { color:var(--text); }
+  .twin { display:flex; gap:18px; flex-wrap:wrap; margin-top:10px; font-size:12px; }
+  .twin .t { display:flex; flex-direction:column; gap:1px; }
+  .twin .t .k { color:var(--text3); font-size:10.5px; text-transform:uppercase; letter-spacing:.05em; }
+  .twin .t .v { font-weight:600; font-size:15px; }
+  .twin .down .v{ color:var(--good); } .twin .up .v{ color:var(--data); }
+  .coach { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; pointer-events:none; }
+  .coach span { background:var(--card2); border:1px solid var(--border); color:var(--text2); font-size:13px; padding:9px 16px; border-radius:999px; box-shadow:var(--shadow); }
+
+  /* ---------- EXPLAINER ---------- */
+  .section-eyebrow { font-size:11.5px; font-weight:600; letter-spacing:.08em; text-transform:uppercase; color:var(--truth); margin:48px 0 10px; }
+  h2.sec { font-size:23px; font-weight:700; letter-spacing:-.01em; margin-bottom:6px; }
+  .lead { color:var(--text2); font-size:15px; margin-bottom:20px; }
+  .three-col { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; }
+  @media (max-width:720px){ .three-col { grid-template-columns:1fr; } }
+  .concept { background:var(--card); border:1px solid var(--border); border-radius:16px; padding:18px; box-shadow:var(--shadow); }
+  .concept .top { display:flex; align-items:center; gap:9px; margin-bottom:4px; }
+  .concept .sym { font-size:22px; font-weight:700; }
+  .concept .nm { font-size:14px; font-weight:600; }
+  .concept .q { font-size:12px; color:var(--text3); font-style:italic; margin-bottom:9px; }
+  .concept .body { font-size:13px; color:var(--text2); line-height:1.62; }
+  .concept .body b { color:var(--text); font-weight:600; }
+  .concept .f { margin-top:10px; padding:6px 9px; border-radius:8px; background:var(--card2); border:1px solid var(--border); font-size:11.5px; }
+  .tag { font-size:9.5px; font-weight:700; padding:2px 8px; border-radius:999px; letter-spacing:.04em; margin-left:auto; }
+  .c-truth .sym,.c-truth .nm{ color:var(--truth);} .c-truth .tag{ background:var(--tag-truth-bg); color:var(--tag-truth-fg);}
+  .c-model .sym,.c-model .nm{ color:var(--good);} .c-model .tag{ background:var(--tag-model-bg); color:var(--tag-model-fg);}
+  .c-data  .sym,.c-data .nm{ color:var(--data);} .c-data .tag{ background:var(--tag-data-bg); color:var(--tag-data-fg);}
+
+  table.cmp { width:100%; border-collapse:collapse; font-size:13px; margin-top:8px; }
+  table.cmp th, table.cmp td { text-align:left; padding:10px 12px; border-bottom:1px solid var(--border); }
+  table.cmp thead th { font-size:11px; text-transform:uppercase; letter-spacing:.05em; color:var(--text3); font-weight:600; }
+  table.cmp tbody th { font-weight:500; color:var(--text2); }
+  table.cmp td { color:var(--text2); }
+  .col-truth{ color:var(--truth);} .col-model{ color:var(--good);} .col-data{ color:var(--data);}
+
+  .insight { background:color-mix(in srgb,var(--good) 9%,var(--card)); border:1px solid color-mix(in srgb,var(--good) 25%,var(--border));
+    border-left:4px solid var(--good); border-radius:0 14px 14px 0; padding:16px 18px; font-size:14px; line-height:1.7; color:var(--text); }
+  .insight b { color:var(--good); }
+
+  .steps { display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:12px; }
+  .step { background:var(--card); border:1px solid var(--border); border-radius:14px; padding:14px; box-shadow:var(--shadow); }
+  .step .i { font-size:22px; margin-bottom:7px; }
+  .step .t { font-size:12.5px; font-weight:600; margin-bottom:3px; }
+  .step .d { font-size:11.5px; color:var(--text3); line-height:1.55; }
+
+  .try p { font-size:13.5px; color:var(--text2); line-height:1.7; margin-bottom:11px; }
+  .try b { color:var(--text); }
+
+  .pills { display:flex; flex-wrap:wrap; gap:9px; margin-top:8px; }
+  .pill { background:var(--card2); border:1px solid var(--border); border-radius:999px; padding:5px 13px; font-size:12px; color:var(--text2); }
+  .pill code { font-size:11px; color:var(--truth); }
+  footer { text-align:center; font-size:12px; color:var(--text3); margin-top:42px; }
+  footer a { color:var(--truth); text-decoration:none; }
+
+  @media (prefers-reduced-motion: reduce){ html{scroll-behavior:auto;} *{transition:none !important;} }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <button class="theme-toggle" id="themeToggle" title="Toggle dark mode" aria-label="Toggle dark mode">◐</button>
+  <div class="hero-inner">
+    <h1>Watch the sample mean find <span style="color:#9CCDF0">E[X]</span></h1>
+    <p>The <b>expected value</b> is a fixed number baked into a probability model — you never measure it, you calculate it. The <b>sample mean</b> is what your data actually averages to. Draw samples and watch the restless mean settle onto the steady expected value. That is the Law of Large Numbers.</p>
+    <div class="dramatis">
+      <div class="glyph g-truth"><span class="sym">μ</span><span class="who">population mean<br>(real · hidden)</span></div>
+      <div class="glyph g-model"><span class="sym">E[X]</span><span class="who">expected value<br>(model · calculated)</span></div>
+      <div class="glyph g-data"><span class="sym">x̄</span><span class="who">sample mean<br>(data · measured)</span></div>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <!-- ===== INTERACTIVE ===== -->
+  <div class="card">
+    <div class="segmented" id="dist-seg">
+      <button class="seg-btn active" data-key="die">🎲 Fair die <span class="ex">E[X]=3.5</span></button>
+      <button class="seg-btn" data-key="grades">🎓 Grade model <span class="ex">E[X]=76</span></button>
+      <button class="seg-btn" data-key="normal">🔔 Normal N(3,1) <span class="ex">E[X]=3</span></button>
+    </div>
+
+    <div class="controls">
+      <button class="btn btn-primary" id="runBtn">▶ Run</button>
+      <button class="btn" id="stepBtn">+100 draws</button>
+      <button class="btn" id="newrunBtn">↻ New run</button>
+      <div class="speed-wrap">speed <input type="range" id="speed" min="0" max="3" step="1" value="1"><span id="speedLbl" class="num">1×</span></div>
+    </div>
+    <div class="jump-row">
+      <span>or jump straight to&nbsp; n =</span>
+      <input type="range" id="jump" min="0" max="5" step="1" value="1">
+      <span class="jv num" id="jumpVal">200</span>
+    </div>
+
+    <div class="stats">
+      <div class="stat"><div class="lbl">draws &nbsp;n</div><div class="val num" id="st-n">0</div></div>
+      <div class="stat s-ex"><div class="lbl"><span class="dotmark" style="background:var(--truth)"></span>E[X] · target</div><div class="val num" id="st-ex">3.500</div></div>
+      <div class="stat s-xbar"><div class="lbl"><span class="dotmark" style="background:var(--data)"></span>x̄ · sample mean</div><div class="val num" id="st-xbar">—</div></div>
+      <div class="stat"><div class="lbl">gap to E[X]</div><div class="val num" id="st-gap">—</div></div>
+    </div>
+
+    <div class="legend">
+      <div class="legend-item"><span class="sw" style="background:var(--truth);height:3px"></span> E[X] = μ (theoretical target)</div>
+      <div class="legend-item"><span class="sw box" style="background:var(--band)"></span> 95% range ±1.96σ/√n</div>
+      <div class="legend-item"><span class="sw" style="background:var(--data)"></span> sample mean x̄ₙ</div>
+      <div class="legend-item"><span class="sw dot" style="background:var(--current)"></span> current x̄</div>
+      <div class="legend-item"><span class="sw" style="background:var(--ghost);height:3px"></span> earlier runs</div>
+    </div>
+
+    <div class="chart-wrap tall">
+      <canvas id="convChart"></canvas>
+      <div class="coach" id="coach"><span>Press ▶ Run — watch the orange mean lock onto the blue target</span></div>
+    </div>
+
+    <div class="caption" id="caption">Each draw is a surprise; the average is the calm. Press <b>Run</b> to begin.</div>
+
+    <div class="twin" id="twin" style="display:none">
+      <div class="t down"><span class="k">Relative gap |x̄−E[X]|/E[X]</span><span class="v num" id="tw-rel">—</span></div>
+      <div class="t up"><span class="k">Absolute surplus Σ(xᵢ−E[X])</span><span class="v num" id="tw-abs">—</span></div>
+      <div class="t" style="flex:1;min-width:220px"><span class="k">why it matters</span><span class="v" style="font-weight:400;font-size:12px;color:var(--text3);line-height:1.5">The books never balance — the surplus keeps growing. Convergence is about <i>proportions</i>, not “evening out.” That is why a streak is never “due.”</span></div>
+    </div>
+  </div>
+
+  <!-- ===== MODEL CHART ===== -->
+  <div class="card">
+    <div class="card-title">Where E[X] comes from — the probability model</div>
+    <div class="card-sub" id="modelSub"></div>
+    <div class="legend" id="modelLegend"></div>
+    <div class="chart-wrap short"><canvas id="modelChart"></canvas></div>
+  </div>
+
+  <!-- ===== EXPLAINER ===== -->
+  <div class="prose">
+    <div class="section-eyebrow">The cast</div>
+    <h2 class="sec">One number here — three different questions</h2>
+    <p class="lead">In these demos μ, E[X], and x̄ land on the same value. The point is <i>not</i> that they're the same — it's that they answer three different questions and happen to agree when the world behaves.</p>
+  </div>
+
+  <div class="three-col">
+    <div class="concept c-truth">
+      <div class="top"><span class="sym">μ</span><span class="nm">Population mean</span><span class="tag">REAL · HIDDEN</span></div>
+      <div class="q">“What is actually true?”</div>
+      <div class="body">The average of <b>every</b> member of the real population. A fixed constant that <b>exists</b> even though you usually <b>can't measure it</b> — you'd have to survey everyone.
+        <div class="f mono">μ = (1/N) · Σ X</div></div>
+    </div>
+    <div class="concept c-model">
+      <div class="top"><span class="sym">E[X]</span><span class="nm">Expected value</span><span class="tag">MODEL · CALCULATED</span></div>
+      <div class="q">“What does the model say?”</div>
+      <div class="body">The probability-weighted average of a random variable — a property of the <b>distribution you chose</b>. You <b>compute</b> it; you never roll it.
+        <div class="f mono">E[X] = Σ xᵢ·P(xᵢ) &nbsp;=&nbsp; ∫ x·f(x) dx</div></div>
+    </div>
+    <div class="concept c-data">
+      <div class="top"><span class="sym">x̄</span><span class="nm">Sample mean</span><span class="tag">DATA · MEASURED</span></div>
+      <div class="q">“What did I observe?”</div>
+      <div class="body">The average of the values <b>actually in your sample</b>. The only one you can always compute from data — but it <b>changes</b> every time you draw a new sample.
+        <div class="f mono">x̄ = (1/n) · Σ xᵢ</div></div>
+    </div>
+  </div>
+
+  <div class="prose">
+    <table class="cmp">
+      <thead><tr><th>Aspect</th><th class="col-truth">μ population</th><th class="col-model">E[X] expected</th><th class="col-data">x̄ sample</th></tr></thead>
+      <tbody>
+        <tr><th>Comes from</th><td>the real world</td><td>a probability model</td><td>your collected data</td></tr>
+        <tr><th>How you get it</th><td>measure everyone</td><td>calculate from P(x)</td><td>average the sample</td></tr>
+        <tr><th>Usually known?</th><td>no — hidden</td><td>yes — exact</td><td>yes — always</td></tr>
+        <tr><th>Does it vary?</th><td>fixed (one population)</td><td>fixed (one model)</td><td>varies every sample</td></tr>
+      </tbody>
+    </table>
+
+    <div class="section-eyebrow">The bridge</div>
+    <div class="insight">
+      The sample mean x̄ is an <b>estimate</b> of the expected value E[X]. By the <b>Law of Large Numbers</b>, as n → ∞ the estimate converges to the target — the orange line settling onto the blue line above. And <i>if</i> your probability model truly describes the population, then <b>E[X] = μ</b>. So the three meet by two different routes: one by a limit (data → model), one by an assumption (model → world). They're equal here because the world is behaving — not by definition.
+    </div>
+
+    <div class="section-eyebrow">How to read it</div>
+  </div>
+
+  <div class="steps">
+    <div class="step"><div class="i">🎯</div><div class="t">Blue line = E[X]</div><div class="d">The fixed target from the model. It never moves while you sample — for the die it sits at 3.5, a value you can't even roll.</div></div>
+    <div class="step"><div class="i">📈</div><div class="t">Orange line = x̄ₙ</div><div class="d">The mean recomputed after every draw. Wild early, then it calms — and it can drift <i>away</i> before coming back. Convergence isn't a straight line.</div></div>
+    <div class="step"><div class="i">🟦</div><div class="t">Blue band = ±1.96σ/√n</div><div class="d">The range the mean should sit in 95% of the time. It pinches inward as n grows — the estimate sharpens.</div></div>
+    <div class="step"><div class="i">👻</div><div class="t">Faint lines = past runs</div><div class="d">Each “New run” leaves a ghost. Different paths, same destination — a small sample is luck, a large one is law.</div></div>
+    <div class="step"><div class="i">📊</div><div class="t">Lower chart</div><div class="d">The distribution filling in. Bars (your data) rise to meet the dots (true probabilities) — the same convergence, one level down.</div></div>
+  </div>
+
+  <div class="prose">
+    <div class="section-eyebrow">Try this</div>
+    <div class="try">
+      <p><b>Run it, then hit “New run” five times.</b> At a glance the early paths scatter all over; every one still ends up hugging the blue line. That fan of ghosts <i>is</i> sampling variability — and it shrinks as n grows.</p>
+      <p><b>Watch the two numbers under the chart move opposite ways.</b> The <i>relative</i> gap shrinks toward 0% while the <i>absolute</i> surplus keeps growing. The average gets closer even though the raw imbalance gets bigger — proof that “the law of averages” evening-out is a myth. A die has no memory; a 6 is never “due.”</p>
+      <p><b>Switch die → grades → normal.</b> The blue target jumps to 3.5, then 76, then 3, and the mean re-chases it each time. E[X] is a property of the <i>model you picked</i> — change the model, move the target. Note no student scores exactly 76, yet 76 is the expected grade.</p>
+      <p><b>Use “jump to n” to teleport to 500,000.</b> The line is pinned to the target and the band is a sliver — but x̄ still isn't <i>exactly</i> E[X]. It estimates the target; it never becomes it. With infinite data the gap would vanish.</p>
+    </div>
+
+    <div class="section-eyebrow">Notation</div>
+    <div class="pills">
+      <div class="pill">Population mean: <code>μ = (1/N) Σ X</code></div>
+      <div class="pill">Expected value (discrete): <code>E[X] = Σ xᵢ P(xᵢ)</code></div>
+      <div class="pill">Expected value (continuous): <code>E[X] = ∫ x f(x) dx</code></div>
+      <div class="pill">Sample mean: <code>x̄ = (1/n) Σ xᵢ</code></div>
+      <div class="pill">Law of Large Numbers: <code>x̄ → E[X] as n → ∞</code></div>
+      <div class="pill">If model = population: <code>E[X] = μ</code></div>
+    </div>
+  </div>
+
+  <footer>Interactive companion to <a href="https://samitstat.github.io/Stat_gn/">Stat_gn</a> · drag the sliders, press Run, toggle ◐ for dark mode.</footer>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script>
+"use strict";
+const Z = 1.96;
+const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/* ---------- palette ---------- */
+const PALETTES = {
+  light:{ truth:'#0072B2', data:'#D55E00', current:'#E69F00', good:'#009E73',
+    axis:'#8A929E', grid:'rgba(20,30,40,0.06)', band:'rgba(0,114,178,0.10)',
+    ghost:'rgba(213,94,0,0.16)', card:'#FFFFFF', tickbg:'#FFFFFF' },
+  dark:{ truth:'#4DA8E0', data:'#FF8A4C', current:'#FFC24D', good:'#34C99A',
+    axis:'#6B7480', grid:'rgba(255,255,255,0.07)', band:'rgba(77,168,224,0.13)',
+    ghost:'rgba(255,138,76,0.16)', card:'#181C22', tickbg:'#181C22' }
+};
+let theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+let PAL = PALETTES[theme];
+
+/* ---------- distributions ---------- */
+function randNorm(){ let u=0,v=0; while(u===0)u=Math.random(); while(v===0)v=Math.random();
+  return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v); }
+function cum(p){ const c=[]; let s=0; for(const x of p){ s+=x; c.push(s);} return c; }
+
+const DISTS = {
+  die:{ type:'discrete', EX:3.5, EXlabel:'3.500', dec:3, sigma:Math.sqrt(35/12),
+    cy:[1,6], outcomes:[1,2,3,4,5,6], probs:[1/6,1/6,1/6,1/6,1/6,1/6],
+    note:'E[X] = 3.5 isn’t a face on the die — the expected value is the long-run average, not an outcome you can roll.',
+    sample(){ return Math.floor(Math.random()*6)+1; } },
+  grades:{ type:'discrete', EX:76, EXlabel:'76.00', dec:2, sigma:Math.sqrt(94),
+    cy:[58,94], outcomes:[60,70,80,90], probs:[0.15,0.30,0.35,0.20],
+    note:'No student scores exactly 76, yet 76 is the expected grade — E[X] need not be a possible value.',
+    sample(){ const r=Math.random(); const c=this._c||(this._c=cum(this.probs));
+      for(let i=0;i<c.length;i++) if(r<c[i]) return this.outcomes[i]; return this.outcomes[3]; } },
+  normal:{ type:'continuous', EX:3, EXlabel:'3.000', dec:3, sigma:1, mu:3,
+    cy:[0,6], xMin:-1, xMax:7, bins:40,
+    note:'For a continuous variable E[X] = ∫ x·f(x) dx. The bars are your sample; the curve is the true density.',
+    pdf(x){ return Math.exp(-0.5*((x-this.mu)/this.sigma)**2)/(this.sigma*Math.sqrt(2*Math.PI)); },
+    sample(){ return this.mu + this.sigma*randNorm(); } }
+};
+
+/* ---------- checkpoints (log-spaced, caps point count) ---------- */
+const MAXN = 500000;
+const CP = (()=>{ const s=new Set(); for(let k=1;k<=60;k++) s.add(k);
+  const steps=190; for(let i=0;i<=steps;i++){ const k=Math.round(Math.pow(MAXN,i/steps)); if(k>=1&&k<=MAXN)s.add(k);}
+  return [...s].sort((a,b)=>a-b); })();
+
+/* ---------- state ---------- */
+let D = DISTS.die;
+let count=0, mean=0, M2=0;
+let counts=[], hist=[];
+let pathPts=[], bandU=[], bandL=[], cpIdx=0;
+let ghosts=[];                      // array of point-arrays
+const MAX_GHOSTS=6;
+let prevXbar=0;
+
+function half(n){ return Z*D.sigma/Math.sqrt(n); }
+
+function resetState(keepGhosts){
+  count=0; mean=0; M2=0; cpIdx=0;
+  pathPts=[]; bandU=[]; bandL=[];
+  counts = D.type==='discrete' ? D.outcomes.map(()=>0) : [];
+  hist   = D.type==='continuous'? new Array(D.bins).fill(0) : [];
+  if(!keepGhosts) ghosts=[];
+}
+
+function ghostCurrent(){
+  if(pathPts.length>3){ ghosts.push(pathPts.slice()); if(ghosts.length>MAX_GHOSTS) ghosts.shift(); }
+}
+
+/* ---------- sampling (O(1) per draw, Welford) ---------- */
+function draw(k){
+  const EX=D.EX;
+  for(let i=0;i<k;i++){
+    const x=D.sample();
+    count++;
+    const d=x-mean; mean+=d/count; M2+=d*(x-mean);
+    if(D.type==='discrete'){ counts[D._idx[x]]++; }
+    else { const b=Math.floor((x-D.xMin)/D._bw); if(b>=0&&b<D.bins) hist[b]++; }
+    while(cpIdx<CP.length && count>=CP[cpIdx]){
+      const n=count, h=half(n);
+      pathPts.push({x:n,y:mean}); bandU.push({x:n,y:EX+h}); bandL.push({x:n,y:EX-h});
+      cpIdx++;
+    }
+  }
+}
+
+/* ---------- charts ---------- */
+let conv=null, model=null;
+const I={BU:0,BL:1,EX:2,GHOST:3,PATH:9,DOT:10}; // ghosts occupy 3..8
+
+function buildConv(){
+  const ds=[];
+  ds[I.BU]={type:'line',data:bandU,borderColor:'transparent',pointRadius:0,fill:false,order:6};
+  ds[I.BL]={type:'line',data:bandL,borderColor:'transparent',backgroundColor:PAL.band,pointRadius:0,fill:'-1',order:6};
+  ds[I.EX]={type:'line',data:[],borderColor:PAL.truth,borderWidth:2.6,pointRadius:0,fill:false,order:5};
+  for(let g=0;g<MAX_GHOSTS;g++) ds[I.GHOST+g]={type:'line',data:[],borderColor:PAL.ghost,borderWidth:1.2,pointRadius:0,fill:false,tension:0,order:4};
+  ds[I.PATH]={type:'line',data:pathPts,borderColor:PAL.data,borderWidth:2.2,pointRadius:0,fill:false,tension:0,order:2};
+  ds[I.DOT]={type:'scatter',data:[],backgroundColor:PAL.current,borderColor:'#fff',borderWidth:1.5,pointRadius:6,order:1};
+  conv=new Chart(document.getElementById('convChart'),{
+    data:{datasets:ds},
+    options:{ responsive:true, maintainAspectRatio:false, animation:false,
+      plugins:{legend:{display:false},tooltip:{enabled:false}},
+      scales:{
+        x:{type:'logarithmic',min:1,max:10,
+          title:{display:true,text:'number of draws  n  (log scale)',color:PAL.axis,font:{size:12}},
+          ticks:{color:PAL.axis}, grid:{color:PAL.grid}},
+        y:{min:D.cy[0],max:D.cy[1],
+          title:{display:true,text:'value',color:PAL.axis,font:{size:12}},
+          ticks:{color:PAL.axis}, grid:{color:PAL.grid}}
+      } }
+  });
+}
+
+function buildModel(){
+  if(model) model.destroy();
+  const ctx=document.getElementById('modelChart');
+  if(D.type==='discrete'){
+    model=new Chart(ctx,{ data:{ labels:D.outcomes.map(String), datasets:[
+      {type:'bar',data:D.outcomes.map(()=>0),backgroundColor:hexA(PAL.data,0.5),borderColor:PAL.data,borderWidth:1,order:2},
+      {type:'line',data:D.probs,borderColor:hexA(PAL.truth,0.5),backgroundColor:PAL.truth,borderWidth:1,pointRadius:5,order:1}
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,animation:false,
+      plugins:{legend:{display:false},tooltip:{enabled:false}},
+      scales:{ x:{title:{display:true,text:'outcome xᵢ',color:PAL.axis,font:{size:12}},ticks:{color:PAL.axis},grid:{display:false}},
+        y:{min:0,suggestedMax:Math.max(...D.probs)*1.25,title:{display:true,text:'probability',color:PAL.axis,font:{size:12}},ticks:{color:PAL.axis,callback:v=>v.toFixed(2)},grid:{color:PAL.grid}} } }});
+  } else {
+    const pdf=[]; for(let x=D.xMin;x<=D.xMax+1e-9;x+=0.05) pdf.push({x:+x.toFixed(2),y:D.pdf(x)});
+    const peak=D.pdf(D.mu);
+    model=new Chart(ctx,{ data:{datasets:[
+      {type:'line',data:[],borderColor:PAL.current,borderWidth:2,borderDash:[4,4],pointRadius:0,order:1,label:'xbar'},
+      {type:'line',data:[{x:D.mu,y:0},{x:D.mu,y:peak*1.08}],borderColor:PAL.truth,borderWidth:2,borderDash:[7,5],pointRadius:0,order:2},
+      {type:'line',data:pdf,borderColor:PAL.truth,borderWidth:2.5,pointRadius:0,tension:0.4,order:3},
+      {type:'bar',data:[],backgroundColor:hexA(PAL.data,0.45),borderColor:PAL.data,borderWidth:0.5,barPercentage:1,categoryPercentage:1,order:4}
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,animation:false,
+      plugins:{legend:{display:false},tooltip:{enabled:false}},
+      scales:{ x:{type:'linear',min:D.xMin,max:D.xMax,title:{display:true,text:'x',color:PAL.axis,font:{size:12}},ticks:{stepSize:1,color:PAL.axis},grid:{color:PAL.grid}},
+        y:{min:0,suggestedMax:peak*1.25,title:{display:true,text:'density',color:PAL.axis,font:{size:12}},ticks:{color:PAL.axis,callback:v=>v.toFixed(2)},grid:{color:PAL.grid}} } }});
+  }
+}
+
+function hexA(hex,a){ // hex -> rgba (handles #rrggbb)
+  const h=hex.replace('#',''); const r=parseInt(h.substr(0,2),16),g=parseInt(h.substr(2,2),16),b=parseInt(h.substr(4,2),16);
+  return `rgba(${r},${g},${b},${a})`; }
+
+/* ---------- render ---------- */
+let lastModel=0;
+function render(force){
+  const EX=D.EX;
+  const xmax = Math.pow(10, Math.ceil(Math.log10(Math.max(10,count||1))));
+  conv.options.scales.x.max = xmax;
+  conv.data.datasets[I.EX].data = [{x:1,y:EX},{x:xmax,y:EX}];
+  conv.data.datasets[I.BU].data = bandU;
+  conv.data.datasets[I.BL].data = bandL;
+  conv.data.datasets[I.PATH].data = pathPts;
+  conv.data.datasets[I.DOT].data = count>=1 ? [{x:count,y:mean}] : [];
+  for(let g=0;g<MAX_GHOSTS;g++) conv.data.datasets[I.GHOST+g].data = ghosts[g]||[];
+  conv.update('none');
+
+  // readouts
+  document.getElementById('st-n').textContent = count.toLocaleString();
+  document.getElementById('st-ex').textContent = D.EXlabel;
+  const xbarEl=document.getElementById('st-xbar'), gapEl=document.getElementById('st-gap');
+  if(count<1){ xbarEl.textContent='—'; gapEl.textContent='—'; }
+  else{
+    xbarEl.textContent = mean.toFixed(D.dec);
+    const pct=100*Math.abs(mean-EX)/Math.abs(EX);
+    gapEl.textContent = pct.toFixed(2)+'%';
+    gapEl.style.color = pct<1.5?'var(--good)': pct<6?'var(--warn)':'var(--text)';
+  }
+  document.getElementById('coach').style.display = count<1 ? 'flex':'none';
+
+  // twin gambler readout
+  const twin=document.getElementById('twin');
+  if(count>=30){ twin.style.display='flex';
+    document.getElementById('tw-rel').textContent=(100*Math.abs(mean-EX)/Math.abs(EX)).toFixed(2)+'%  ↓';
+    const surplus=count*(mean-EX);
+    document.getElementById('tw-abs').textContent=(surplus>=0?'+':'')+surplus.toFixed(1)+'  ↑';
+  } else twin.style.display='none';
+
+  setCaption();
+  if(force || performance.now()-lastModel>110){ lastModel=performance.now(); updateModel(); }
+}
+
+function updateModel(){
+  if(!model) return;
+  if(D.type==='discrete'){
+    model.data.datasets[0].data = counts.map(c=> count? c/count : 0);
+  } else {
+    const dens = hist.map((c,i)=>({x:D._bc[i], y: count? c/(count*D._bw):0}));
+    model.data.datasets[3].data = dens;
+    model.data.datasets[0].data = count>=1 ? [{x:mean,y:0},{x:mean,y:D.pdf(D.mu)*1.08}] : [];
+  }
+  model.update('none');
+}
+
+function setCaption(){
+  const el=document.getElementById('caption');
+  if(count<1){ el.innerHTML='Each draw is a surprise; the average is the calm. Press <b>Run</b> to begin.'; return; }
+  const pct=100*Math.abs(mean-D.EX)/Math.abs(D.EX);
+  let msg;
+  if(count<30) msg=`<b>Wild swings.</b> With only ${count} draw${count>1?'s':''}, a few unlucky values drag x̄ far from ${D.EXlabel}. The mean is volatile when data is scarce.`;
+  else if(count<800) msg=`<b>Settling down.</b> n = ${count.toLocaleString()}. Each new draw nudges the average less than the last — it can still wander, but the swings are shrinking.`;
+  else if(pct<2) msg=`<b>Locked on.</b> n = ${count.toLocaleString()}. x̄ barely flinches now and sits ${pct.toFixed(2)}% from E[X]. This is the Law of Large Numbers.`;
+  else msg=`n = ${count.toLocaleString()}. Closing in — x̄ is ${pct.toFixed(2)}% from the target and the 95% band keeps pinching.`;
+  el.innerHTML=msg;
+}
+
+/* ---------- animation loop ---------- */
+let playing=false, rafId=null, lastTs=0, rate=14;
+const SPEEDS=[0.5,1,2,4]; let speed=1;
+const ANIM_STOP=120000;
+
+function tick(ts){
+  if(!playing) return;
+  const dt = lastTs ? Math.min(80, ts-lastTs) : 16; lastTs=ts;
+  rate = Math.min(60000, rate*1.05 + 1);
+  let batch = Math.max(1, Math.round(rate*speed*dt/1000));
+  batch = Math.min(batch, ANIM_STOP-count);
+  draw(batch);
+  render(false);
+  if(count>=ANIM_STOP){ stop(); render(true);
+    document.getElementById('caption').innerHTML=`<b>Converged.</b> n = ${count.toLocaleString()}. The mean is pinned to E[X]. Hit <b>New run</b> to leave a ghost and watch a fresh path arrive at the same target.`;
+    return; }
+  rafId=requestAnimationFrame(tick);
+}
+function play(){ if(playing||count>=ANIM_STOP) return; playing=true; lastTs=0; rate=Math.max(rate,14);
+  document.getElementById('runBtn').innerHTML='⏸ Pause'; rafId=requestAnimationFrame(tick); }
+function stop(){ playing=false; if(rafId)cancelAnimationFrame(rafId); rafId=null;
+  document.getElementById('runBtn').innerHTML = count>=ANIM_STOP?'▶ Run':'▶ Resume'; }
+
+/* ---------- controls ---------- */
+function newRun(){ stop(); ghostCurrent(); resetState(true); rate=14;
+  document.getElementById('runBtn').innerHTML='▶ Run'; flash(); render(true); }
+function flash(){ document.querySelectorAll('.stat').forEach(s=>{ s.classList.add('flash'); setTimeout(()=>s.classList.remove('flash'),420); }); }
+
+function setDist(key){
+  if(D===DISTS[key]) return;
+  stop(); D=DISTS[key]; prepDist(); resetState(false); rate=14;
+  document.querySelectorAll('.seg-btn').forEach(b=>b.classList.toggle('active',b.dataset.key===key));
+  document.getElementById('runBtn').innerHTML='▶ Run';
+  conv.options.scales.y.min=D.cy[0]; conv.options.scales.y.max=D.cy[1];
+  document.getElementById('modelSub').textContent=D.note;
+  setModelLegend(); buildModel(); render(true);
+}
+function prepDist(){
+  if(D.type==='discrete'){ D._idx={}; D.outcomes.forEach((o,i)=>D._idx[o]=i); }
+  else { D._bw=(D.xMax-D.xMin)/D.bins; D._bc=[]; for(let i=0;i<D.bins;i++) D._bc.push(+(D.xMin+(i+0.5)*D._bw).toFixed(3)); }
+}
+
+const JUMPS=[50,200,1000,10000,100000,500000];
+function jumpTo(n){ stop(); ghosts=[]; resetState(false); draw(n); rate=14;
+  document.getElementById('runBtn').innerHTML='▶ Run'; render(true); }
+
+function setModelLegend(){
+  const el=document.getElementById('modelLegend');
+  el.innerHTML = D.type==='continuous'
+    ? '<div class="legend-item"><span class="sw box" style="background:'+hexA(PAL.data,.45)+'"></span> sample histogram</div>'
+     +'<div class="legend-item"><span class="sw" style="background:var(--truth)"></span> true PDF</div>'
+     +'<div class="legend-item"><span class="sw" style="background:var(--truth);border-top:2px dashed var(--truth)"></span> E[X]=μ</div>'
+     +'<div class="legend-item"><span class="sw" style="background:var(--current)"></span> x̄</div>'
+    : '<div class="legend-item"><span class="sw box" style="background:'+hexA(PAL.data,.5)+'"></span> your sample (relative frequency)</div>'
+     +'<div class="legend-item"><span class="sw dot" style="background:var(--truth)"></span> true probability P(X=xᵢ)</div>';
+}
+
+/* ---------- theme ---------- */
+function applyTheme(){ document.documentElement.setAttribute('data-theme',theme); PAL=PALETTES[theme];
+  document.getElementById('themeToggle').textContent = theme==='dark'?'☀':'◐';
+  retheme(); setModelLegend(); }
+function retheme(){
+  if(conv){ const d=conv.data.datasets;
+    d[I.BL].backgroundColor=PAL.band; d[I.EX].borderColor=PAL.truth;
+    for(let g=0;g<MAX_GHOSTS;g++) d[I.GHOST+g].borderColor=PAL.ghost;
+    d[I.PATH].borderColor=PAL.data; d[I.DOT].backgroundColor=PAL.current;
+    const sx=conv.options.scales.x, sy=conv.options.scales.y;
+    sx.ticks.color=sy.ticks.color=PAL.axis; sx.grid.color=sy.grid.color=PAL.grid;
+    sx.title.color=sy.title.color=PAL.axis; conv.update('none'); }
+  buildModel(); updateModel();
+}
+
+/* ---------- wire ---------- */
+document.getElementById('runBtn').onclick=()=> playing?stop():play();
+document.getElementById('stepBtn').onclick=()=>{ if(count<MAXN){ draw(100); render(true);} };
+document.getElementById('newrunBtn').onclick=newRun;
+document.getElementById('speed').oninput=function(){ speed=SPEEDS[+this.value]; document.getElementById('speedLbl').textContent=speed+'×'; };
+document.getElementById('jump').oninput=function(){ const n=JUMPS[+this.value]; document.getElementById('jumpVal').textContent=n.toLocaleString(); jumpTo(n); };
+document.querySelectorAll('.seg-btn').forEach(b=>b.onclick=()=>setDist(b.dataset.key));
+document.getElementById('themeToggle').onclick=()=>{ theme=theme==='dark'?'light':'dark'; applyTheme(); };
+
+/* ---------- init ---------- */
+prepDist(); resetState(false);
+buildConv(); buildModel();
+document.documentElement.setAttribute('data-theme',theme);
+document.getElementById('themeToggle').textContent = theme==='dark'?'☀':'◐';
+document.getElementById('modelSub').textContent=D.note;
+setModelLegend();
+render(true);
+</script>
+</body>
+</html>
