@@ -129,6 +129,10 @@
   .lead { color:var(--text2); font-size:15px; margin-bottom:20px; }
   .three-col { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; }
   @media (max-width:720px){ .three-col { grid-template-columns:1fr; } }
+  .two-col { display:grid; grid-template-columns:repeat(2,1fr); gap:14px; }
+  @media (max-width:620px){ .two-col { grid-template-columns:1fr; } }
+  .c-freq .sym,.c-freq .nm{ color:var(--truth);} .c-freq .tag{ background:var(--tag-truth-bg); color:var(--tag-truth-fg);}
+  .c-bayes .sym,.c-bayes .nm{ color:var(--data);} .c-bayes .tag{ background:var(--tag-data-bg); color:var(--tag-data-fg);}
   .concept { background:var(--card); border:1px solid var(--border); border-radius:16px; padding:18px; box-shadow:var(--shadow); }
   .concept .top { display:flex; align-items:center; gap:9px; margin-bottom:4px; }
   .concept .sym { font-size:22px; font-weight:700; }
@@ -177,7 +181,7 @@
   <button class="theme-toggle" id="themeToggle" title="Toggle dark mode" aria-label="Toggle dark mode">◐</button>
   <div class="hero-inner">
     <h1>Watch the sample mean find <span style="color:#9CCDF0">E[X]</span></h1>
-    <p>The <b>expected value</b> is a fixed number baked into a probability model — you never measure it, you calculate it. The <b>sample mean</b> is what your data actually averages to. Draw samples and watch the restless mean settle onto the steady expected value. That is the Law of Large Numbers.</p>
+    <p>The <b>expected value</b> E[X] and the <b>population mean</b> μ are both <b>fixed numbers</b> — you calculate or define them, you don't measure them. The one thing that wiggles is the <b>sample mean</b> x̄, the average of whatever data you happen to draw. Watch the restless sample mean settle onto the steady expected value — that's the Law of Large Numbers.</p>
     <div class="dramatis">
       <div class="glyph g-truth"><span class="sym">μ</span><span class="who">population mean<br>(real · hidden)</span></div>
       <div class="glyph g-model"><span class="sym">E[X]</span><span class="who">expected value<br>(model · calculated)</span></div>
@@ -249,7 +253,7 @@
   <div class="prose">
     <div class="section-eyebrow">The cast</div>
     <h2 class="sec">One number here — three different questions</h2>
-    <p class="lead">In these demos μ, E[X], and x̄ land on the same value. The point is <i>not</i> that they're the same — it's that they answer three different questions and happen to agree when the world behaves.</p>
+    <p class="lead">Everyday usage blurs three different things. <b>“The mean”</b> usually means the <b>sample mean x̄</b> — the average you actually compute from data. The <b>population mean μ</b> is the average of the entire real population, and the <b>expectation E[X]</b> is the average a probability model predicts. In these demos all three land on the same value — the point is <i>not</i> that they're identical, but that they answer three different questions and only <i>agree</i> when the model fits the world. The key thing to hold onto: <b>μ and E[X] are both fixed numbers — only x̄ varies</b> from one sample to the next.</p>
   </div>
 
   <div class="three-col">
@@ -262,7 +266,7 @@
     <div class="concept c-model">
       <div class="top"><span class="sym">E[X]</span><span class="nm">Expected value</span><span class="tag">MODEL · CALCULATED</span></div>
       <div class="q">“What does the model say?”</div>
-      <div class="body">The probability-weighted average of a random variable — a property of the <b>distribution you chose</b>. You <b>compute</b> it; you never roll it.
+      <div class="body">The probability-weighted average of a random variable — a property of the <b>distribution you chose</b>. You <b>compute</b> it; you never roll it. It is a <b>single number, not a distribution</b>: the variable X carries the distribution, and E[X] just marks its balance point.
         <div class="f mono">E[X] = Σ xᵢ·P(xᵢ) &nbsp;=&nbsp; ∫ x·f(x) dx</div></div>
     </div>
     <div class="concept c-data">
@@ -287,6 +291,31 @@
     <div class="section-eyebrow">The bridge</div>
     <div class="insight">
       The sample mean x̄ is an <b>estimate</b> of the expected value E[X]. By the <b>Law of Large Numbers</b>, as n → ∞ the estimate converges to the target — the orange line settling onto the blue line above. And <i>if</i> your probability model truly describes the population, then <b>E[X] = μ</b>. So the three meet by two different routes: one by a limit (data → model), one by an assumption (model → world). They're equal here because the world is behaving — not by definition.
+    </div>
+  </div>
+
+  <div class="prose">
+    <div class="section-eyebrow">Two schools — frequentist vs Bayesian</div>
+    <h2 class="sec">Is a parameter fixed, or does it have a distribution?</h2>
+    <p class="lead">Your instinct — “isn't it fixed?” — has a precise answer, and it depends on which statistical worldview you take. This page is built the <b>frequentist</b> way; the <b>Bayesian</b> view answers differently.</p>
+  </div>
+
+  <div class="two-col">
+    <div class="concept c-freq">
+      <div class="top"><span class="sym">∞</span><span class="nm">Frequentist</span><span class="tag">THIS PAGE</span></div>
+      <div class="q">“The parameter is fixed; the data is random.”</div>
+      <div class="body">μ and E[X] are <b>fixed unknown constants</b> — they have no distribution. All the randomness lives in your <b>sample</b>, so the estimate <b>x̄ has a sampling distribution</b>, and the Law of Large Numbers drags it toward the fixed target. That's exactly the animation above: a wiggling x̄ chasing a steady E[X] = μ. Probability here means <b>long-run frequency</b>.</div>
+    </div>
+    <div class="concept c-bayes">
+      <div class="top"><span class="sym">θ</span><span class="nm">Bayesian</span><span class="tag">OTHER VIEW</span></div>
+      <div class="q">“The parameter itself has a distribution.”</div>
+      <div class="body">You treat the unknown mean as a <b>random variable</b> and give it a distribution that encodes your <b>uncertainty</b>: start with a <b>prior</b>, observe data, update to a <b>posterior</b> via Bayes' theorem. Here “the mean” genuinely <i>has</i> a distribution — but it describes your <b>belief about its value</b>, not the parameter physically fluctuating. Probability here means <b>degree of belief</b>.</div>
+    </div>
+  </div>
+
+  <div class="prose">
+    <div class="insight">
+      <b>So — fixed, or a distribution?</b> Both, depending on the framework. The number <b>E[X] is always a single value</b> (the random variable X is what carries the distribution). Whether the <i>parameter</i> μ is treated as a fixed constant (frequentist) or as a quantity with its own distribution (Bayesian) is a modelling choice, not a fact about the number. The Law of Large Numbers shown here is a frequentist statement — so on this page E[X] = μ stay put and only x̄ moves.
     </div>
 
     <div class="section-eyebrow">How to read it</div>
