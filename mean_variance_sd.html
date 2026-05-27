@@ -58,7 +58,7 @@
 
   .canvas-box{ position:relative; width:100%; }
   .canvas-box canvas{ width:100%; height:100%; display:block; touch-action:none; }
-  .h-stage{height:290px;} .h-motiv{height:210px;} .h-diss{height:330px;} .h-sd{height:240px;} .h-sim{height:330px;} .h-bell{height:260px;}
+  .h-stage{height:290px;} .h-motiv{height:210px;} .h-diss{height:330px;} .h-sd{height:300px;}.h-sim{height:330px;} .h-bell{height:260px;}
   h3.deep{ font-size:20px; margin:28px 0 6px; } h3.deep.v{ color:var(--variance); } h3.deep.s{ color:var(--sd); }
   .h-tri{height:240px;} .h-devsum{height:188px;} .h-why{height:280px;}
   .ov-title{ font-family:"IBM Plex Mono",monospace; font-size:11px; letter-spacing:.06em; text-transform:uppercase; color:var(--faint); margin-bottom:14px; }
@@ -246,6 +246,7 @@
       <b>The standard deviation.</b> <span data-tex="s=\sqrt{s^2}"></span> &nbsp;—&nbsp; the <b>typical distance</b> of a point from the mean, back in the data’s own units.
     </div>
     <div class="card"><div class="canvas-box h-sd"><canvas id="sdcanvas"></canvas></div></div>
+    <p class="body"><b>So what is it telling you?</b> For our five scores the SD is about <b>3</b> — a typical score sits roughly 3 away from the mean of 6. In plain words, the data is “<b>6, give or take 3</b>.” That “give or take” is the whole point: a <b>small</b> SD means the values huddle close to the mean (consistent, predictable); a <b>large</b> SD means they’re scattered (variable). Two classes can share the same average of 85, yet one with SD 2 is uniform while one with SD 15 is all over the map.</p>
     <div class="note violet">A subtle point: standard deviation is <b>not</b> the plain average of the distances. The squaring lets far points pull harder, so SD comes out a bit larger than the average gap. (That plain average has its own name — the “mean absolute deviation” — and it’s a different number.)</div>
   </section>
 
@@ -256,10 +257,10 @@
     <p class="body">You can compute both numbers now. But two honest questions are left: why <em>square</em> the distances instead of just averaging them, and why is the spread we actually quote the <em>square root</em> of that? The answers are what these numbers really <b>mean</b>.</p>
 
     <h3 class="deep v">Why square the distances?</h3>
-    <p class="body"><b>Start with the obvious idea — and watch it fail.</b> Why not just average how far each point is from the mean? Because those distances carry a sign — points below the mean are negative, points above are positive — and they <b>always cancel to exactly zero</b>. Drag the dots up in Step 1 and watch the running total below stay pinned at 0, for <em>every</em> arrangement:</p>
+    <p class="body"><b>Start with the obvious idea — and watch it fail.</b> Why not just average how far each point is from the mean? Take our five scores (mean&nbsp;6): the distances are <span class="mono">−4, −1.5, 0, +1.5, +4</span>. Add them up and you get <b>exactly 0</b> — the minuses and pluses always cancel, for <em>any</em> dataset. So averaging the raw distances is useless. Drag the dots up in Step 1 and watch the running total below stay pinned at 0:</p>
     <div class="card"><div class="canvas-box h-devsum"><canvas id="devsum"></canvas></div></div>
     <p class="body">So averaging the raw distances is useless — it’s always 0. We have to drop the signs first, and <b>squaring</b> does that (a square is never negative). But squaring also does something we genuinely want:</p>
-    <p class="body"><b>It makes far-away points count for much more.</b> Square a distance and a point <em>twice</em> as far contributes <b>four</b> times as much; three times as far, <b>nine</b> times. Slide the point below — the <b style="color:var(--sd)">distance</b> grows in a straight line, but its <b style="color:var(--variance)">square (the area)</b> races ahead:</p>
+    <p class="body"><b>It makes far-away points count for much more.</b> Square a distance and a point <em>twice</em> as far contributes <b>four</b> times as much; three times as far, <b>nine</b> times. In our example the squared distances are <span class="mono">16, 2.25, 0, 2.25, 16</span> — the two far-out scores alone (16 each) make up <b>32 of the total 36.5</b>, dominating the variance. Slide the point below: the <b style="color:var(--sd)">distance</b> grows in a straight line, but its <b style="color:var(--variance)">square (the area)</b> races ahead:</p>
     <div class="card">
       <div class="ctl-row" style="justify-content:center;margin-bottom:6px"><span>distance from the mean&nbsp; d = <b id="dlbl" class="num">1.5</b></span>
         <input type="range" id="dSlider" min="0.5" max="3" step="0.1" value="1.5" style="width:170px"></div>
@@ -279,6 +280,8 @@
     <p class="body">And in those familiar units, the SD becomes a <b>ruler for “how unusual.”</b> For bell-shaped data the rule of thumb is sharp:</p>
     <div class="card"><div class="canvas-box h-bell"><canvas id="bell"></canvas></div></div>
     <div class="note violet">About <b>68%</b> of values land within <b>±1 SD</b> of the mean, <b>95%</b> within <b>±2 SD</b>, and <b>99.7%</b> within <b>±3 SD</b>. So “1 SD out” is <em>ordinary</em>; “3 SD out” is <em>rare</em> — the standard deviation is the natural scale of variation.</div>
+
+    <p class="body" style="margin-top:20px"><b>In one line — what they tell you.</b> The <b style="color:var(--variance)">variance</b> (here 9.13, in points²) is the engine: one squared-up number for the total spread. Its square root, the <b style="color:var(--sd)">standard deviation</b> (≈ 3), is the human-readable answer — the <b>typical distance from the mean</b>, your data “6, give or take 3.” That give-or-take is what they’re ultimately for: <b>how tightly the data clusters around its center.</b></p>
   </section>
 
   <!-- ===================== STEP 7 · RECAP TABLE ===================== -->
@@ -454,22 +457,30 @@ function drawDiss(){ if(!DW) return; const s=stat(); dcx.clearRect(0,0,DW,DH);
 const sc=document.getElementById('sdcanvas'), scx=sc.getContext('2d'); let CW=0,CH=0;
 function resizeSD(){ const s=sizeCanvas(sc,scx); CW=s.w; CH=s.h; }
 function drawSD(){ if(!CW) return; const s=stat(); scx.clearRect(0,0,CW,CH);
-  const side=Math.min(CH-80, CW*0.28), sqx=40, sqy=20;
-  scx.fillStyle=C.varFill; scx.strokeStyle=C.variance; scx.lineWidth=1.5; scx.fillRect(sqx,sqy,side,side); scx.strokeRect(sqx,sqy,side,side);
-  scx.fillStyle=C.variance; scx.font='600 13px "IBM Plex Mono",monospace'; scx.textAlign='center'; scx.textBaseline='middle';
-  scx.fillText('variance = '+fmt(s.v,2), sqx+side/2, sqy+side/2-8); scx.fillText('(units²)', sqx+side/2, sqy+side/2+10);
-  const ay=sqy+side+34;
-  scx.strokeStyle=C.soft; scx.setLineDash([4,4]); scx.lineWidth=1.2; scx.beginPath(); scx.moveTo(sqx+side/2,sqy+side); scx.lineTo(sqx+side/2,ay-6); scx.stroke(); scx.setLineDash([]);
-  scx.fillStyle=C.sd; scx.font='600 13px "IBM Plex Mono",monospace'; scx.textAlign='left'; scx.textBaseline='bottom'; scx.fillText('take the square root →', sqx, ay-10);
-  scx.strokeStyle=C.sd; scx.lineWidth=4; scx.beginPath(); scx.moveTo(sqx,ay+16); scx.lineTo(sqx+side,ay+16); scx.stroke();
-  scx.fillStyle=C.sd; scx.beginPath(); scx.arc(sqx,ay+16,4,0,7); scx.arc(sqx+side,ay+16,4,0,7); scx.fill();
-  scx.textAlign='center'; scx.textBaseline='top'; scx.font='600 12px "IBM Plex Mono",monospace'; scx.fillText('SD = '+fmt(s.sd,2)+' (units)',sqx+side/2,ay+22);
-  const tx=sqx+side+34;
-  scx.fillStyle=C.soft; scx.font='13px "IBM Plex Mono",monospace'; scx.textAlign='left'; scx.textBaseline='middle';
-  scx.fillText('the side of the variance', tx, sqy+side*0.4);
-  scx.fillText('square, laid on the axis —', tx, sqy+side*0.4+19);
-  scx.fillText('a typical distance, in', tx, sqy+side*0.4+38);
-  scx.fillText('the data’s own units.', tx, sqy+side*0.4+57);
+  const Lm=44,Rm=22;
+  // top: the variance, drawn as an area (a square)
+  const sq=Math.min(90, CH*0.30), sx=Lm, sy=14;
+  scx.fillStyle=C.varFill; scx.strokeStyle=C.variance; scx.lineWidth=1.5; scx.fillRect(sx,sy,sq,sq); scx.strokeRect(sx,sy,sq,sq);
+  scx.fillStyle=C.variance; scx.font='600 12px "IBM Plex Mono",monospace'; scx.textAlign='center'; scx.textBaseline='middle';
+  scx.fillText('variance', sx+sq/2, sy+sq/2-9); scx.fillText(fmt(s.v,2), sx+sq/2, sy+sq/2+8);
+  scx.textAlign='left';
+  scx.fillStyle=C.soft; scx.font='11px "IBM Plex Mono",monospace'; scx.fillText('an area — in units²', sx+sq+16, sy+sq*0.28);
+  scx.fillStyle=C.sd; scx.font='600 13px "IBM Plex Mono",monospace'; scx.fillText('√ '+fmt(s.v,2)+'  =  '+fmt(s.sd,2), sx+sq+16, sy+sq*0.56);
+  scx.fillStyle=C.soft; scx.font='11px "IBM Plex Mono",monospace'; scx.fillText('the square’s side = the SD ↓', sx+sq+16, sy+sq*0.56+17);
+  // bottom: a real number line (with values) showing ±1 SD on the actual data
+  const axisY=CH-32, bandTop=sy+sq+34, d2=x=>Lm+(x-dom.x0)/(dom.x1-dom.x0)*(CW-Lm-Rm);
+  const bL=d2(s.m-s.sd), bR=d2(s.m+s.sd);
+  scx.fillStyle='rgba(122,79,176,.16)'; scx.fillRect(bL,bandTop,bR-bL,axisY-bandTop);
+  scx.strokeStyle=C.line; scx.lineWidth=1.5; scx.beginPath(); scx.moveTo(Lm,axisY); scx.lineTo(CW-Rm,axisY); scx.stroke();
+  scx.fillStyle=C.faint; scx.font='11px "IBM Plex Mono",monospace'; scx.textAlign='center'; scx.textBaseline='top';
+  for(const t of niceTicks(dom.x0,dom.x1,6)){ const px=d2(t); if(px<Lm-1||px>CW-Rm+1)continue;
+    scx.strokeStyle=C.line; scx.beginPath(); scx.moveTo(px,axisY); scx.lineTo(px,axisY+5); scx.stroke(); scx.fillStyle=C.faint; scx.fillText(fmt(t,Number.isInteger(t)?0:1),px,axisY+8); }
+  scx.strokeStyle=C.mean; scx.lineWidth=1.5; scx.setLineDash([3,4]); scx.beginPath(); scx.moveTo(d2(s.m),bandTop); scx.lineTo(d2(s.m),axisY); scx.stroke(); scx.setLineDash([]);
+  scx.fillStyle=C.mean; scx.font='600 10px "IBM Plex Mono",monospace'; scx.textAlign='center'; scx.textBaseline='bottom'; scx.fillText('mean '+fmt(s.m,1),d2(s.m),bandTop-2);
+  data.forEach(x=>{ const px=d2(x); scx.beginPath(); scx.arc(px,axisY,6,0,7); scx.fillStyle=C.disk; scx.fill(); scx.lineWidth=2; scx.strokeStyle=C.edge; scx.stroke(); });
+  const my=(bandTop+axisY)/2;
+  scx.strokeStyle=C.sd; scx.lineWidth=2; scx.beginPath(); scx.moveTo(bL,my); scx.lineTo(bR,my); scx.moveTo(bL,my-4); scx.lineTo(bL,my+4); scx.moveTo(bR,my-4); scx.lineTo(bR,my+4); scx.stroke();
+  scx.fillStyle=C.sd; scx.font='600 12px "IBM Plex Mono",monospace'; scx.textAlign='center'; scx.textBaseline='bottom'; scx.fillText('±1 SD = '+fmt(s.sd,2)+' — a typical distance from the mean', d2(s.m), my-6);
 }
 
 /* bell curve: the 68-95-99.7 ruler */
