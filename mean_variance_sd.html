@@ -59,7 +59,14 @@
   .canvas-box{ position:relative; width:100%; }
   .canvas-box canvas{ width:100%; height:100%; display:block; touch-action:none; }
   .h-stage{height:290px;} .h-motiv{height:210px;} .h-diss{height:330px;} .h-sd{height:240px;} .h-sim{height:330px;} .h-bell{height:260px;}
-  h3.deep{ font-size:20px; margin:28px 0 4px; } h3.deep.v{ color:var(--variance); } h3.deep.s{ color:var(--sd); }
+  h3.deep{ font-size:20px; margin:28px 0 6px; } h3.deep.v{ color:var(--variance); } h3.deep.s{ color:var(--sd); }
+  .h-tri{height:280px;}
+  .ov-title{ font-family:"IBM Plex Mono",monospace; font-size:11px; letter-spacing:.06em; text-transform:uppercase; color:var(--faint); margin-bottom:14px; }
+  .ov-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:18px; } @media(max-width:680px){ .ov-grid{ grid-template-columns:1fr; gap:14px; } }
+  .ov-item{ display:flex; gap:10px; align-items:flex-start; }
+  .ov-dot{ width:10px; height:10px; border-radius:50%; margin-top:7px; flex:none; }
+  .ov-nm{ font-size:13px; color:var(--soft); margin-bottom:6px; }
+  .ov-foot{ margin-top:16px; font-size:13.5px; color:var(--faint); }
   .stage-grid{ display:grid; grid-template-columns:1fr 220px; gap:18px; align-items:start; }
   @media(max-width:740px){ .stage-grid{ grid-template-columns:1fr; } }
   .readout{ display:flex; flex-direction:column; gap:10px; }
@@ -122,6 +129,17 @@
     <h1>Mean, variance &amp; standard deviation</h1>
     <p class="dek">Five students take a test. Can we capture the whole class in just a number or two? Follow that one question and you’ll build the three most important summaries in statistics — no background needed.</p>
   </header>
+
+  <!-- ===================== EQUATIONS UP FRONT ===================== -->
+  <div class="card">
+    <div class="ov-title">The three formulas — we’ll build the intuition for each below</div>
+    <div class="ov-grid">
+      <div class="ov-item"><span class="ov-dot" style="background:var(--mean)"></span><div><div class="ov-nm">Mean — the center</div><span data-tex="\bar{x}=\frac{1}{n}\sum_{i=1}^{n} x_i"></span></div></div>
+      <div class="ov-item"><span class="ov-dot" style="background:var(--variance)"></span><div><div class="ov-nm">Variance — spread, as area</div><span data-tex="s^2=\frac{1}{n-1}\sum (x_i-\bar{x})^2"></span></div></div>
+      <div class="ov-item"><span class="ov-dot" style="background:var(--sd)"></span><div><div class="ov-nm">Std deviation — spread, as length</div><span data-tex="s=\sqrt{s^2}"></span></div></div>
+    </div>
+    <div class="ov-foot">Look cryptic? That’s the point of the rest of the page — it unpacks each one from scratch, no background needed.</div>
+  </div>
 
   <!-- ===================== STEP 1 · THE DATA + MEAN ===================== -->
   <section class="step">
@@ -237,20 +255,17 @@
     <h2>So why squares — and why the square root?</h2>
     <p class="body">You can compute both numbers now. But two honest questions are left: why <em>square</em> the distances instead of just averaging them, and why is the spread we actually quote the <em>square root</em> of that? The answers are what these numbers really <b>mean</b>.</p>
 
-    <h3 class="deep v">Why squaring — what variance signifies</h3>
-    <p class="body"><b>1 · It makes distances positive, and weights the big ones.</b> Plain distances cancel to zero; squaring removes the signs and makes a far point count far more — twice as far becomes four times the area. That much you saw in Step 3.</p>
-    <p class="body"><b>2 · Squares are how distances combine — variances <em>add</em>.</b> Squaring isn’t arbitrary; it’s geometry. Squared distance is exactly what the Pythagorean theorem is built on. The payoff: when you combine <em>independent</em> sources of variation, their <b>variances add</b> —</p>
-    <div class="formula-band var"><span data-tex="\operatorname{Var}(X+Y)=\operatorname{Var}(X)+\operatorname{Var}(Y)"></span> &nbsp;(independent <span data-tex="X,Y"></span>) — yet the standard deviations do <b>not</b> add. They combine like the legs of a right triangle, <span data-tex="s=\sqrt{s_X^{2}+s_Y^{2}}"></span> — the “Pythagorean theorem of statistics.”</div>
-    <p class="body">That additivity is what makes variance the <b>fundamental</b> measure of spread, and it has a famous consequence: the spread of a <b>sum of n independent things grows only like √n</b>, not n. That’s exactly why averages settle down and the bell curve emerges — the engine behind the <a href="https://samitstat.github.io/Stat_gn/expected_value_vs_mean.html" style="color:var(--mean)">Law of Large Numbers</a>.</p>
-    <p class="body"><b>3 · Physically, variance is a moment of inertia.</b> Picture each data point as an equal weight on a rod. The mean is the <b>center of mass</b> — the balance point from Step 1. The variance is then the rod’s <b>moment of inertia</b> about that point, <span data-tex="\textstyle\sum (\text{mass})\times(\text{distance})^2"></span> — a measure of how hard the data would be to <em>spin</em>. Spread, in this picture, is rotational inertia — which is why it lives in distance-<em>squared</em> (area-like) units.</p>
+    <h3 class="deep v">Why square the distances?</h3>
+    <p class="body"><b>Because squares add — plain distances don’t.</b> Turn each distance into a square (an area). Then when two <em>independent</em> spreads combine, their <b>areas — the variances — simply add up</b>. The standard deviations don’t add; they meet at a right angle, like the sides of a right triangle:</p>
+    <div class="card"><div class="canvas-box h-tri"><canvas id="tri"></canvas></div></div>
+    <div class="note gold">A spread of <b>3</b> combined with an independent spread of <b>4</b> gives a combined spread of <b>5</b> — not 7 — because the <em>variances</em> add: <b>9 + 16 = 25</b>. That’s the Pythagorean theorem, hiding inside statistics. One big payoff: combine n independent things and the spread grows only like <b>√n</b>, not n — which is why averages settle down, the <a href="https://samitstat.github.io/Stat_gn/expected_value_vs_mean.html" style="color:var(--mean)">Law of Large Numbers</a>.</div>
+    <p class="body"><b>A physical picture, if you like:</b> imagine the points as equal weights on a rod. The mean is the balance point (Step 1); the variance is how hard the rod is to <em>spin</em> — far weights resist far more, which is exactly the squaring at work.</p>
 
-    <h3 class="deep s">Why the square root — what standard deviation signifies</h3>
-    <p class="body"><b>1 · It returns to the data’s units.</b> Variance is points²; its root is points — a length you can lay on the axis (Step 5).</p>
-    <p class="body"><b>2 · It’s the root-mean-square distance.</b> <span data-tex="s=\sqrt{\overline{(x_i-\bar{x})^2}}"></span> is the <b>RMS</b> distance from the mean — the standard way engineers get the “typical size” of a fluctuating quantity. So SD is the typical distance, with the big gaps pulling it upward.</p>
-    <p class="body"><b>3 · Physically, it’s the radius of gyration.</b> In that same spinning picture, the SD is the single distance at which you could gather <em>all</em> the weight and still get the same moment of inertia — the data’s “effective spread radius.”</p>
-    <p class="body"><b>4 · It’s the ruler for “how unusual.”</b> Because SD is in the data’s own units, we measure how far a value sits in <b>units of SD</b> (a “z-score”). For bell-shaped data the rule of thumb is sharp:</p>
+    <h3 class="deep s">Why take the square root?</h3>
+    <p class="body"><b>To get back to a distance you can read.</b> Variance came out as an <em>area</em> — points², not points. The square root folds that area back into a plain <b>length on your data’s own axis</b>: the typical distance of a point from the mean.</p>
+    <p class="body">And in those familiar units, the SD becomes a <b>ruler for “how unusual.”</b> For bell-shaped data the rule of thumb is sharp:</p>
     <div class="card"><div class="canvas-box h-bell"><canvas id="bell"></canvas></div></div>
-    <div class="note violet">About <b>68%</b> of values fall within <b>±1 SD</b> of the mean, <b>95%</b> within <b>±2 SD</b>, and <b>99.7%</b> within <b>±3 SD</b>. So “1 SD out” is <em>ordinary</em>; “3 SD out” is <em>rare</em>. The standard deviation sets the natural scale of variation — the unit in which we measure how surprising a value is.</div>
+    <div class="note violet">About <b>68%</b> of values land within <b>±1 SD</b> of the mean, <b>95%</b> within <b>±2 SD</b>, and <b>99.7%</b> within <b>±3 SD</b>. So “1 SD out” is <em>ordinary</em>; “3 SD out” is <em>rare</em> — the standard deviation is the natural scale of variation. <span style="color:var(--faint)">(That typical distance also has a name in physics: the data’s “radius of gyration” — the one distance at which all the weight could sit and spin the same.)</span></div>
   </section>
 
   <!-- ===================== STEP 7 · RECAP TABLE ===================== -->
@@ -464,6 +479,27 @@ function drawBell(){ if(!BW) return; bcx.clearRect(0,0,BW,BH); const L=20,R=20,B
   bcx.font='600 10px "IBM Plex Mono",monospace'; bcx.fillText('99.7%', zx(2.6), baseY-peak*0.035);
 }
 
+/* right triangle: variances add (the 3-4-5 picture) */
+const trc=document.getElementById('tri'), trx=trc.getContext('2d'); let TRW=0,TRH=0;
+function resizeTri(){ const s=sizeCanvas(trc,trx); TRW=s.w; TRH=s.h; }
+function drawTri(){ if(!TRW) return; trx.clearRect(0,0,TRW,TRH);
+  const u=Math.min(34,(TRH-92)/4), Lx=3*u, Ly=4*u, ax=92, ay=TRH-44;
+  const A={x:ax,y:ay}, B={x:ax+Lx,y:ay}, Cc={x:ax,y:ay-Ly};
+  trx.fillStyle='rgba(122,79,176,.10)'; trx.beginPath(); trx.moveTo(A.x,A.y); trx.lineTo(B.x,B.y); trx.lineTo(Cc.x,Cc.y); trx.closePath(); trx.fill();
+  trx.strokeStyle=C.sd; trx.lineWidth=2.5; trx.beginPath(); trx.moveTo(A.x,A.y); trx.lineTo(B.x,B.y); trx.lineTo(Cc.x,Cc.y); trx.closePath(); trx.stroke();
+  trx.strokeStyle=C.faint; trx.lineWidth=1; trx.strokeRect(A.x,A.y-12,12,12);
+  trx.font='600 13px "IBM Plex Mono",monospace';
+  trx.fillStyle=C.devNeg; trx.textAlign='center'; trx.textBaseline='top'; trx.fillText('SD 3',(A.x+B.x)/2,A.y+9);
+  trx.fillStyle=C.devPos; trx.textAlign='right'; trx.textBaseline='middle'; trx.fillText('SD 4 ',A.x-6,(A.y+Cc.y)/2);
+  trx.fillStyle=C.sd; trx.textAlign='left'; trx.textBaseline='bottom'; trx.fillText(' combined SD 5',(B.x+Cc.x)/2,(B.y+Cc.y)/2);
+  const ex=Math.max(B.x+46, TRW*0.54);
+  trx.textAlign='left'; trx.textBaseline='middle';
+  trx.fillStyle=C.soft; trx.font='12px "IBM Plex Mono",monospace'; trx.fillText('variances (the squares) add', ex, TRH*0.30);
+  trx.fillStyle=C.variance; trx.font='600 22px "IBM Plex Mono",monospace'; trx.fillText('9 + 16 = 25', ex, TRH*0.30+30);
+  trx.fillStyle=C.soft; trx.font='12px "IBM Plex Mono",monospace'; trx.fillText('3² + 4² = 5²', ex, TRH*0.30+58);
+  trx.fillStyle=C.faint; trx.font='11px "IBM Plex Mono",monospace'; trx.fillText('but the SDs don’t: 3 + 4 ≠ 5', ex, TRH*0.30+82);
+}
+
 /* n-1 simulation */
 const mc=document.getElementById('sim'), mcx=mc.getContext('2d'); let MW=0,MH=0;
 let popKind='normal', simN=5, acc={J:0,sumN:0,sumN1:0}, hist=[], busy=false; const SIG2=1;
@@ -508,16 +544,16 @@ document.getElementById('simReset').addEventListener('click',simResetAll);
 
 /* theme */
 function applyTheme(){ document.documentElement.setAttribute('data-theme',theme); C=PAL[theme];
-  document.getElementById('themeToggle').textContent=theme==='dark'?'☀':'◐'; drawStage(); drawMotiv(); drawDiss(); drawSD(); drawBell(); drawSim(); }
+  document.getElementById('themeToggle').textContent=theme==='dark'?'☀':'◐'; drawStage(); drawMotiv(); drawDiss(); drawSD(); drawTri(); drawBell(); drawSim(); }
 document.getElementById('themeToggle').addEventListener('click',()=>{ theme=theme==='dark'?'light':'dark'; applyTheme(); });
 
 /* KaTeX + init */
 function renderMath(){ try{ document.querySelectorAll('[data-tex]').forEach(el=>{ katex.render(el.getAttribute('data-tex'),el,{throwOnError:false,trust:true,strict:'ignore',displayMode:false}); }); }catch(e){} }
 function init(){ document.documentElement.setAttribute('data-theme',theme); document.getElementById('themeToggle').textContent=theme==='dark'?'☀':'◐';
   if(window.katex) renderMath(); else window.addEventListener('load',renderMath);
-  fitDomain(); resizeStage(); resizeMotiv(); resizeDiss(); resizeSD(); resizeBell(); resizeSim();
-  refreshAll(); drawMotiv(); setStep(1); drawBell(); drawSim(); updateSimCap();
-  let to; addEventListener('resize',()=>{ clearTimeout(to); to=setTimeout(()=>{ resizeStage(); resizeMotiv(); resizeDiss(); resizeSD(); resizeBell(); resizeSim(); refreshAll(); drawMotiv(); drawBell(); drawSim(); },120); }); }
+  fitDomain(); resizeStage(); resizeMotiv(); resizeDiss(); resizeSD(); resizeTri(); resizeBell(); resizeSim();
+  refreshAll(); drawMotiv(); setStep(1); drawTri(); drawBell(); drawSim(); updateSimCap();
+  let to; addEventListener('resize',()=>{ clearTimeout(to); to=setTimeout(()=>{ resizeStage(); resizeMotiv(); resizeDiss(); resizeSD(); resizeTri(); resizeBell(); resizeSim(); refreshAll(); drawMotiv(); drawTri(); drawBell(); drawSim(); },120); }); }
 if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',init); else init();
 </script>
 </body>
