@@ -3,123 +3,129 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Mean, Variance &amp; Standard Deviation — drag the data</title>
+<title>Mean, Variance &amp; Standard Deviation — definitions, formulas, and what they mean</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
 <style>
   :root, [data-theme="light"]{
     --paper:#FBF7F0; --stage:#FFFFFF; --ink:#1C1B1A; --soft:#6A6560; --faint:#9A938A;
     --line:#E7DFD2; --line2:#EFE9DE;
-    --mean:#2E6F6A; --devNeg:#3B6FB0; --devPos:#C25A3C; --variance:#B98A1F; --sd:#7A4FB0; --live:#E4572E;
+    --mean:#2E6F6A; --devNeg:#3B6FB0; --devPos:#C25A3C; --variance:#B07F12; --sd:#7A4FB0; --live:#E4572E; --good:#2E8B57;
     --mean-bg:#E2EEED; --var-bg:#F6ECD2; --sd-bg:#EDE5F5;
+    --hl:#FBEFC9;
     --shadow:0 1px 2px rgba(40,30,15,.05), 0 14px 34px -16px rgba(40,30,15,.18);
   }
   [data-theme="dark"]{
     --paper:#15140F; --stage:#1E1C17; --ink:#EDE7DB; --soft:#A39C8E; --faint:#6E675B;
     --line:#322E25; --line2:#262219;
-    --mean:#5BBBB1; --devNeg:#6BA3E0; --devPos:#E0876A; --variance:#E0B24A; --sd:#B596E6; --live:#FF7A52;
+    --mean:#5BBBB1; --devNeg:#6BA3E0; --devPos:#E0876A; --variance:#E0B24A; --sd:#B596E6; --live:#FF7A52; --good:#5FC98C;
     --mean-bg:#13302D; --var-bg:#332912; --sd-bg:#241A33;
+    --hl:#4A3D17;
     --shadow:0 1px 2px rgba(0,0,0,.4), 0 16px 38px -18px rgba(0,0,0,.7);
   }
   *{box-sizing:border-box; margin:0; padding:0;}
   body{ background:var(--paper); color:var(--ink);
     font-family:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,"Times New Roman",serif;
     font-size:18px; line-height:1.7; -webkit-font-smoothing:antialiased; transition:background .3s,color .3s; }
-  .wrap{ max-width:1080px; margin:0 auto; padding:0 26px 80px; }
+  .wrap{ max-width:980px; margin:0 auto; padding:0 26px 80px; }
   .prose{ max-width:720px; }
-  .num,.mono{ font-family:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace; font-variant-numeric:tabular-nums; }
-  h1,h2,h3,.disp{ font-family:"Fraunces",Georgia,serif; font-weight:600; letter-spacing:-.01em; line-height:1.12; }
+  .mono,.num{ font-family:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace; font-variant-numeric:tabular-nums; }
+  h1,h2,h3,.disp{ font-family:"Fraunces",Georgia,serif; font-weight:600; letter-spacing:-.01em; line-height:1.15; }
+  .katex{ font-size:1.08em; }
 
-  /* masthead */
-  .masthead{ padding:54px 0 26px; position:relative; }
-  .eyebrow{ font-family:"IBM Plex Mono",monospace; font-size:12px; letter-spacing:.14em; text-transform:uppercase; color:var(--mean); margin-bottom:14px; }
-  h1{ font-size:clamp(30px,5vw,50px); margin-bottom:14px; }
-  .dek{ font-size:clamp(16px,2vw,20px); color:var(--soft); max-width:660px; }
-  .theme-toggle{ position:absolute; top:26px; right:0; width:40px; height:40px; border-radius:10px;
-    border:1px solid var(--line); background:var(--stage); color:var(--ink); cursor:pointer; font-size:17px; line-height:1; transition:.2s; }
+  .masthead{ padding:52px 0 22px; position:relative; }
+  .eyebrow{ font-family:"IBM Plex Mono",monospace; font-size:12px; letter-spacing:.13em; text-transform:uppercase; color:var(--mean); margin-bottom:12px; }
+  h1{ font-size:clamp(28px,4.6vw,46px); margin-bottom:14px; }
+  .dek{ font-size:clamp(16px,2vw,19px); color:var(--soft); max-width:680px; }
+  .theme-toggle{ position:absolute; top:24px; right:0; width:40px; height:40px; border-radius:10px;
+    border:1px solid var(--line); background:var(--stage); color:var(--ink); cursor:pointer; font-size:17px; }
   .theme-toggle:hover{ border-color:var(--mean); }
-  .axis-thread{ height:1px; background:repeating-linear-gradient(90deg,var(--line) 0 7px,transparent 7px 14px); margin-top:30px; }
 
-  /* stage */
-  .stage-card{ background:var(--stage); border:1px solid var(--line); border-radius:14px; box-shadow:var(--shadow); padding:20px; margin-top:30px; }
-  .toolbar{ display:flex; flex-wrap:wrap; gap:10px 18px; align-items:center; margin-bottom:16px; }
-  .group{ display:flex; gap:7px; align-items:center; flex-wrap:wrap; }
-  .group .lbl{ font-family:"IBM Plex Mono",monospace; font-size:10.5px; letter-spacing:.08em; text-transform:uppercase; color:var(--faint); margin-right:2px; }
-  .chip{ font-family:"IBM Plex Mono",monospace; font-size:12.5px; border:1px solid var(--line); background:var(--paper); color:var(--soft);
-    padding:6px 12px; border-radius:999px; cursor:pointer; transition:.15s; }
+  /* section scaffolding */
+  .sec-head{ margin:60px 0 14px; }
+  .sec-head .eyebrow{ margin-bottom:8px; }
+  h2{ font-size:clamp(22px,3vw,30px); }
+  .lead{ color:var(--soft); font-size:16.5px; margin:6px 0 0; max-width:720px; }
+  p.body{ margin:14px 0; max-width:720px; }
+  p.body b{ font-weight:600; }
+
+  .card{ background:var(--stage); border:1px solid var(--line); border-radius:14px; box-shadow:var(--shadow); padding:22px; margin-top:18px; }
+  .formula-band{ background:var(--stage); border:1px solid var(--line); border-left:4px solid var(--mean); border-radius:0 12px 12px 0;
+    padding:14px 20px; margin:16px 0; overflow-x:auto; }
+  .formula-band.var{ border-left-color:var(--variance); } .formula-band.sd{ border-left-color:var(--sd); }
+  .def{ font-size:16.5px; } .def b{ font-weight:600; }
+
+  /* comparison table */
+  .cmp-wrap{ overflow-x:auto; }
+  table.cmp{ width:100%; border-collapse:collapse; min-width:560px; }
+  table.cmp th, table.cmp td{ text-align:left; padding:13px 14px; border-bottom:1px solid var(--line); vertical-align:top; }
+  table.cmp thead th{ font-family:"Fraunces",serif; font-size:18px; font-weight:600; border-bottom:2px solid var(--line); }
+  table.cmp thead th .glyph{ font-size:13px; font-family:"IBM Plex Mono",monospace; display:block; margin-top:2px; font-weight:400; }
+  table.cmp tbody th{ font-family:"IBM Plex Mono",monospace; font-size:11px; letter-spacing:.05em; text-transform:uppercase; color:var(--faint); font-weight:500; width:120px; }
+  table.cmp td{ font-size:15px; color:var(--ink); }
+  table.cmp .c-mean{ color:var(--mean); } table.cmp .c-var{ color:var(--variance); } table.cmp .c-sd{ color:var(--sd); }
+  .liveval{ font-family:"IBM Plex Mono",monospace; font-weight:500; }
+
+  /* canvases */
+  .canvas-box{ position:relative; width:100%; }
+  .canvas-box canvas{ width:100%; height:100%; display:block; touch-action:none; }
+  .h-stage{ height:300px; } .h-diss{ height:330px; } .h-sd{ height:250px; } .h-sim{ height:340px; }
+  .stage-grid{ display:grid; grid-template-columns:1fr 240px; gap:18px; align-items:start; }
+  @media(max-width:740px){ .stage-grid{ grid-template-columns:1fr; } }
+  .readout{ display:flex; flex-direction:column; gap:10px; }
+  .stat{ border:1px solid var(--line); border-radius:11px; padding:10px 13px; }
+  .stat .k{ font-family:"IBM Plex Mono",monospace; font-size:10px; letter-spacing:.05em; text-transform:uppercase; color:var(--faint); }
+  .stat .v{ font-family:"IBM Plex Mono",monospace; font-size:25px; font-weight:500; margin-top:1px; }
+  .stat.mean{ background:var(--mean-bg);} .stat.mean .v{color:var(--mean);}
+  .stat.var{ background:var(--var-bg);} .stat.var .v{color:var(--variance);}
+  .stat.sd{ background:var(--sd-bg);} .stat.sd .v{color:var(--sd);}
+  .hintbar{ font-family:"IBM Plex Mono",monospace; font-size:12px; color:var(--faint); margin-top:8px; }
+
+  .chips{ display:flex; gap:7px; flex-wrap:wrap; align-items:center; margin-bottom:12px; }
+  .chips .lbl{ font-family:"IBM Plex Mono",monospace; font-size:10.5px; letter-spacing:.06em; text-transform:uppercase; color:var(--faint); }
+  .chip{ font-family:"IBM Plex Mono",monospace; font-size:12.5px; border:1px solid var(--line); background:var(--paper); color:var(--soft); padding:6px 12px; border-radius:999px; cursor:pointer; transition:.15s; }
   .chip:hover{ border-color:var(--mean); color:var(--ink); }
   .chip.on{ background:var(--ink); color:var(--paper); border-color:var(--ink); }
-  .chip[data-layer="dev"].on{ background:var(--devPos); border-color:var(--devPos); color:#fff; }
-  .chip[data-layer="sq"].on{ background:var(--variance); border-color:var(--variance); color:#fff; }
-  .chip[data-layer="sd"].on{ background:var(--sd); border-color:var(--sd); color:#fff; }
-  .seg{ display:inline-flex; border:1px solid var(--line); border-radius:999px; overflow:hidden; }
-  .seg button{ border:0; background:var(--paper); color:var(--soft); font-family:"IBM Plex Mono",monospace; font-size:12px; padding:6px 12px; cursor:pointer; }
-  .seg button.on{ background:var(--mean); color:#fff; }
-
-  .stage-grid{ display:grid; grid-template-columns:1fr 270px; gap:18px; align-items:start; }
-  @media(max-width:760px){ .stage-grid{ grid-template-columns:1fr; } }
-  .canvas-box{ position:relative; width:100%; height:380px; }
-  .canvas-box canvas{ width:100%; height:100%; touch-action:none; cursor:grab; display:block; }
-  .canvas-box canvas:active{ cursor:grabbing; }
-  .hint{ position:absolute; left:50%; top:14px; transform:translateX(-50%); font-family:"IBM Plex Mono",monospace;
-    font-size:12px; color:var(--faint); background:var(--paper); border:1px solid var(--line); border-radius:999px; padding:4px 13px; pointer-events:none; opacity:.9; }
-
-  .readout{ display:flex; flex-direction:column; gap:11px; }
-  .stat{ border:1px solid var(--line); border-radius:11px; padding:11px 13px; }
-  .stat .k{ font-family:"IBM Plex Mono",monospace; font-size:10.5px; letter-spacing:.06em; text-transform:uppercase; color:var(--faint); display:flex; align-items:center; gap:6px; }
-  .stat .v{ font-family:"IBM Plex Mono",monospace; font-size:27px; font-weight:500; margin-top:2px; }
-  .stat .f{ font-family:"IBM Plex Mono",monospace; font-size:11px; color:var(--soft); margin-top:3px; word-break:break-word; }
-  .stat.mean{ background:var(--mean-bg); } .stat.mean .v{ color:var(--mean); }
-  .stat.var{ background:var(--var-bg); } .stat.var .v{ color:var(--variance); }
-  .stat.sd{ background:var(--sd-bg); } .stat.sd .v{ color:var(--sd); }
-  .dotk{ width:9px; height:9px; border-radius:50%; display:inline-block; }
-  .balance{ font-family:"IBM Plex Mono",monospace; font-size:11.5px; color:var(--soft); border:1px dashed var(--line); border-radius:9px; padding:8px 11px; line-height:1.5; }
-  .balance b{ color:var(--mean); }
-
-  .caption{ margin-top:14px; font-size:15px; color:var(--soft); line-height:1.6; min-height:24px; }
-  .caption b{ color:var(--ink); }
-
-  /* generic section */
-  .sec-head{ margin:64px 0 6px; }
-  .sec-head .eyebrow{ margin-bottom:8px; }
-  h2{ font-size:clamp(23px,3.2vw,32px); }
-  .lead{ color:var(--soft); font-size:17px; margin:8px 0 18px; max-width:720px; }
-  p.body{ margin:0 0 16px; max-width:720px; }
-  p.body b{ font-weight:600; }
-  .markline{ height:1px; background:var(--line); margin:8px 0; }
-
-  /* parabola */
-  .para-card{ background:var(--stage); border:1px solid var(--line); border-radius:14px; box-shadow:var(--shadow); padding:20px; }
-  .para-box{ position:relative; width:100%; height:420px; }
-  .para-box canvas{ width:100%; height:100%; touch-action:none; cursor:ew-resize; display:block; }
-  .para-foot{ display:flex; gap:14px; align-items:center; flex-wrap:wrap; margin-top:12px; }
-  .btn{ font-family:"IBM Plex Mono",monospace; font-size:13px; border:1px solid var(--line); background:var(--paper); color:var(--ink); padding:8px 16px; border-radius:9px; cursor:pointer; transition:.15s; }
+  .btn{ font-family:"IBM Plex Mono",monospace; font-size:13px; border:1px solid var(--line); background:var(--paper); color:var(--ink); padding:8px 15px; border-radius:9px; cursor:pointer; transition:.15s; }
   .btn:hover{ border-color:var(--mean); }
   .btn.primary{ background:var(--mean); color:#fff; border-color:var(--mean); }
+  .btn.gold{ background:var(--variance); color:#fff; border-color:var(--variance); }
 
-  /* notes / details */
-  .note{ border-left:3px solid var(--devPos); background:var(--paper); border-radius:0 10px 10px 0; padding:12px 16px; margin:18px 0; font-size:15px; color:var(--ink); line-height:1.65; }
-  .note.teal{ border-left-color:var(--mean); }
-  .note.violet{ border-left-color:var(--sd); }
+  /* dissection */
+  .diss-formula{ text-align:center; margin:6px 0 16px; font-size:1.25em; }
+  .kt-hl{ background:var(--hl); border-radius:5px; padding:1px 3px; }
+  .kt-dev{ color:var(--devPos); } .kt-sq{ color:var(--variance); } .kt-sum{ color:var(--variance); } .kt-div{ color:var(--soft); }
+  .step-row{ display:flex; gap:8px; flex-wrap:wrap; justify-content:center; margin-bottom:14px; }
+  .step-btn{ font-family:"IBM Plex Mono",monospace; font-size:12.5px; border:1px solid var(--line); background:var(--paper); color:var(--soft); padding:7px 13px; border-radius:9px; cursor:pointer; transition:.15s; }
+  .step-btn.on{ background:var(--variance); color:#fff; border-color:var(--variance); }
+  .diss-cap{ text-align:center; color:var(--soft); font-size:15px; margin-top:12px; min-height:46px; }
+  .diss-cap b{ color:var(--ink); }
+
+  /* sim */
+  .sim-grid{ display:grid; grid-template-columns:1fr 240px; gap:18px; align-items:start; }
+  @media(max-width:740px){ .sim-grid{ grid-template-columns:1fr; } }
+  .ctl-row{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:10px; font-family:"IBM Plex Mono",monospace; font-size:12.5px; color:var(--soft); }
+  .ctl-row input[type=range]{ accent-color:var(--mean); cursor:pointer; }
+  .legend{ display:flex; flex-direction:column; gap:7px; font-family:"IBM Plex Mono",monospace; font-size:12px; }
+  .legend .li{ display:flex; align-items:center; gap:8px; }
+  .legend .sw{ width:18px; height:3px; border-radius:2px; flex:none; } .legend .sw.dash{ background:none; border-top:2px dashed; }
+  .sim-cap{ color:var(--soft); font-size:14.5px; margin-top:12px; line-height:1.6; } .sim-cap b{ color:var(--ink); }
+
+  /* two-panel sample/pop */
+  .twopanel{ display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+  @media(max-width:640px){ .twopanel{ grid-template-columns:1fr; } }
+  .panel{ border:1px solid var(--line); border-radius:12px; padding:16px 18px; background:var(--stage); }
+  .panel h3{ font-size:16px; margin-bottom:4px; } .panel .tag{ font-family:"IBM Plex Mono",monospace; font-size:10.5px; letter-spacing:.05em; text-transform:uppercase; color:var(--faint); }
+  .panel .row{ margin:10px 0; } .panel .row .nm{ font-size:13px; color:var(--soft); }
+
+  .note{ border-left:3px solid var(--devPos); background:var(--paper); border-radius:0 10px 10px 0; padding:12px 16px; margin:16px 0; font-size:15px; line-height:1.65; }
+  .note.teal{ border-left-color:var(--mean); } .note.violet{ border-left-color:var(--sd); } .note.gold{ border-left-color:var(--variance); }
   .note b{ font-weight:600; }
-  details{ border:1px solid var(--line); border-radius:11px; padding:2px 16px; margin:12px 0; background:var(--stage); }
-  details summary{ cursor:pointer; font-family:"Fraunces",serif; font-weight:600; font-size:17px; padding:12px 0; list-style:none; }
-  details summary::-webkit-details-marker{ display:none; }
-  details summary::before{ content:"▸ "; color:var(--mean); }
-  details[open] summary::before{ content:"▾ "; }
-  details .inner{ padding:0 0 14px; font-size:15.5px; color:var(--soft); line-height:1.7; }
-  details .inner b{ color:var(--ink); font-weight:600; }
-  .fx{ font-family:"IBM Plex Mono",monospace; font-size:13px; background:var(--paper); border:1px solid var(--line); border-radius:7px; padding:2px 7px; color:var(--ink); }
-
-  /* 3d */
-  .threed-card{ background:var(--stage); border:1px solid var(--line); border-radius:14px; box-shadow:var(--shadow); padding:20px; }
-  #plot3d{ width:100%; height:460px; }
-  .threed-ph{ height:300px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:14px; border:1px dashed var(--line); border-radius:11px; color:var(--soft); text-align:center; padding:20px; }
-
   footer{ text-align:center; color:var(--faint); font-size:13px; margin-top:56px; font-family:"IBM Plex Mono",monospace; }
   footer a{ color:var(--mean); text-decoration:none; }
-  @media (prefers-reduced-motion: reduce){ html{scroll-behavior:auto;} *{transition:none !important;} }
+  @media (prefers-reduced-motion: reduce){ *{transition:none !important;} }
 </style>
 </head>
 <body>
@@ -127,470 +133,383 @@
 
   <header class="masthead">
     <button class="theme-toggle" id="themeToggle" aria-label="Toggle dark mode">◐</button>
-    <div class="eyebrow">Mean · Variance · Standard Deviation</div>
-    <h1>Grab the data. Watch the spread.</h1>
-    <p class="dek">The mean is where the data <em>balances</em>. Variance is the average of squared distances from it. Standard deviation brings that back to a length you can read. Drag the points below and feel all three move together.</p>
-    <div class="axis-thread"></div>
+    <div class="eyebrow">descriptive statistics</div>
+    <h1>Mean, variance &amp; standard deviation</h1>
+    <p class="dek">Three numbers describe any dataset: where it <b>centers</b> (the mean) and how far it <b>spreads</b> (variance, then standard deviation). We start with the definitions and formulas, then show a picture of what each formula actually computes.</p>
   </header>
 
-  <!-- ===================== STAGE ===================== -->
-  <div class="stage-card">
-    <div class="toolbar">
-      <div class="group"><span class="lbl">show</span>
-        <button class="chip on" data-layer="dev">deviations</button>
-        <button class="chip on" data-layer="sq">squares</button>
-        <button class="chip" data-layer="sd">±SD band</button>
-      </div>
-      <div class="group"><span class="lbl">data</span>
-        <button class="chip" data-preset="figure">5 points</button>
-        <button class="chip" data-preset="class">70 / 100 class</button>
-        <button class="chip" data-preset="random">random</button>
-      </div>
-      <div class="group" style="margin-left:auto"><span class="lbl">divide by</span>
-        <div class="seg" id="divSeg">
-          <button data-div="sample" class="on">n−1 (sample)</button>
-          <button data-div="pop">n (population)</button>
-        </div>
-      </div>
-    </div>
+  <!-- ===================== 1. AT A GLANCE ===================== -->
+  <div class="sec-head"><div class="eyebrow">at a glance</div><h2>The three measures, side by side</h2>
+    <p class="lead">Read <b>down</b> a column to understand one measure; read <b>across</b> a row to compare them. Live values update from the dataset in the next section.</p></div>
+  <div class="card cmp-wrap">
+    <table class="cmp">
+      <thead><tr>
+        <th></th>
+        <th class="c-mean">Mean<span class="glyph">x̄ · center</span></th>
+        <th class="c-var">Variance<span class="glyph">s² · spread (area)</span></th>
+        <th class="c-sd">Std deviation<span class="glyph">s · spread (length)</span></th>
+      </tr></thead>
+      <tbody>
+        <tr><th>In words</th>
+          <td>the balance point — the center of the data</td>
+          <td>the <b>average squared distance</b> from the mean</td>
+          <td>the <b>typical distance</b> from the mean</td></tr>
+        <tr><th>Formula</th>
+          <td><span data-tex="\bar{x}=\frac{1}{n}\sum x_i"></span></td>
+          <td><span data-tex="s^2=\frac{1}{n-1}\sum (x_i-\bar{x})^2"></span></td>
+          <td><span data-tex="s=\sqrt{s^2}"></span></td></tr>
+        <tr><th>Answers</th>
+          <td>“where is the middle?”</td>
+          <td>“how spread out — in area?”</td>
+          <td>“how spread out — in data units?”</td></tr>
+        <tr><th>Units</th>
+          <td>same as data</td>
+          <td><b>squared</b> units (e.g. points²)</td>
+          <td>same as data (e.g. points)</td></tr>
+        <tr><th>On this data</th>
+          <td class="c-mean liveval" id="tv-mean">—</td>
+          <td class="c-var liveval" id="tv-var">—</td>
+          <td class="c-sd liveval" id="tv-sd">—</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="note gold">Notice the <b>Units</b> row — that single comparison is why standard deviation exists. Variance is in <i>squared</i> units (hard to feel), so we take its square root to get a spread back in the data’s own units.</div>
 
+  <!-- ===================== 2. MEAN ===================== -->
+  <div class="sec-head"><div class="eyebrow">measure 1 · center</div><h2>Mean — the balance point</h2>
+    <p class="lead">The mean adds up every value and divides by how many there are. Geometrically, it’s the point where the data balances: the pull from the low side equals the pull from the high side.</p></div>
+  <div class="formula-band">
+    <div class="def"><b>Definition.</b> Sample mean <span data-tex="\bar{x}=\frac{1}{n}\sum_{i=1}^{n} x_i"></span> &nbsp;·&nbsp; population mean <span data-tex="\mu=\frac{1}{N}\sum x_i"></span> &nbsp;·&nbsp; and the expected value <span data-tex="E[X]=\mu"></span>.</div>
+  </div>
+  <div class="card">
+    <div class="chips"><span class="lbl">dataset</span>
+      <button class="chip" data-preset="figure">5 points</button>
+      <button class="chip" data-preset="class">70 / 100 class</button>
+      <button class="chip" data-preset="random">random</button>
+      <span class="lbl" style="margin-left:8px">show</span>
+      <button class="chip" id="devChip">deviations</button>
+    </div>
     <div class="stage-grid">
-      <div class="canvas-box">
-        <canvas id="stage"></canvas>
-        <div class="hint" id="hint">drag any point ↔</div>
-      </div>
+      <div class="canvas-box h-stage"><canvas id="stage"></canvas></div>
       <div class="readout">
-        <div class="stat mean"><div class="k"><span class="dotk" style="background:var(--mean)"></span>Mean &nbsp;x̄</div><div class="v" id="r-mean">—</div><div class="f" id="r-mean-f"></div></div>
-        <div class="stat var"><div class="k"><span class="dotk" style="background:var(--variance)"></span>Variance</div><div class="v" id="r-var">—</div><div class="f" id="r-var-f"></div></div>
-        <div class="stat sd"><div class="k"><span class="dotk" style="background:var(--sd)"></span>Std deviation</div><div class="v" id="r-sd">—</div><div class="f" id="r-sd-f"></div></div>
-        <div class="balance" id="r-balance"></div>
+        <div class="stat mean"><div class="k">mean x̄</div><div class="v" id="r-mean">—</div></div>
+        <div class="stat var"><div class="k">variance s²</div><div class="v" id="r-var">—</div></div>
+        <div class="stat sd"><div class="k">std dev s</div><div class="v" id="r-sd">—</div></div>
+        <div class="hintbar" id="balance"></div>
       </div>
     </div>
-    <div class="caption" id="caption"></div>
+    <div class="hintbar">↔ drag any point — the fulcrum (mean) and every plot below follow.</div>
   </div>
+  <div class="note teal">Try the <b>70 / 100 class</b>: the mean is <b>85</b>, yet <b>nobody scored 85</b>. The mean is a balance point, not “what a typical student got.”</div>
 
-  <!-- ===================== NARRATIVE: BALANCE ===================== -->
-  <div class="sec-head"><div class="eyebrow">Act 1 · the mean</div><h2>A balance point, not a “typical” value</h2></div>
-  <p class="body">Slide the triangle’s data around and the <b style="color:var(--mean)">teal fulcrum</b> always settles where the pull from the left exactly equals the pull from the right. That’s the mean: the one spot where the deviations sum to zero, <span class="fx">Σ(xᵢ − x̄) = 0</span> — the data’s centre of gravity.</p>
-  <div class="note teal">Try the <b>70 / 100 class</b> preset. The mean is <b>85</b> — yet <b>nobody scored 85</b>. The mean is a balance point, not “what a typical student got,” and it need not be a value anyone actually has.</div>
-
-  <!-- ===================== NARRATIVE: SQUARES ===================== -->
-  <div class="sec-head"><div class="eyebrow">Act 2 · variance</div><h2>Why we <em>square</em> the distances</h2></div>
-  <p class="body">Turn on <b style="color:var(--devPos)">deviations</b>: each point gets a signed distance to the mean. Add them up and you always get <b>zero</b> — the positives and negatives cancel (that’s the balance again). So raw distances can’t measure spread.</p>
-  <p class="body">Turn on <b style="color:var(--variance)">squares</b>: each deviation grows into a literal square whose <b>area</b> is the squared distance. Squaring kills the signs <em>and</em> punishes far points hard — drag a point <b>twice as far</b> and its square gets <b>four times bigger</b>. The <b>variance</b> is the average of these square areas.</p>
-  <div class="note">Variance lives in <b>squared units</b> (points², cm²…). That’s why it’s hard to feel directly — it’s an <b>area</b>, not a distance.</div>
-
-  <!-- ===================== NARRATIVE: SD ===================== -->
-  <div class="sec-head"><div class="eyebrow">Act 3 · standard deviation</div><h2>Bringing it back to a length</h2></div>
-  <p class="body">Turn on the <b style="color:var(--sd)">±SD band</b>. Standard deviation is just <span class="fx">√variance</span> — the side of the “average square” laid back down on the number line. Now it’s in the data’s own units: a <b>typical distance from the mean</b>. Small SD = tight cluster; large SD = wide spread.</p>
-  <div class="note violet">Standard deviation is <b>not</b> the average of the raw distances. Because of the squaring, far points count for more — so SD is a little larger than the plain average gap. (Statisticians call the plain average gap the “mean absolute deviation,” a different number.)</div>
-
-  <!-- ===================== PARABOLA ===================== -->
-  <div class="sec-head"><div class="eyebrow">Act 4 · the deep reason</div><h2>Why the mean, of all points?</h2></div>
-  <p class="body">Here’s the property that makes the mean special. Drag the <b style="color:var(--live)">dashed guess line</b> to <em>any</em> centre you like; from every point we draw a square to your guess and add up the areas — the <b>total squared distance</b>. Watch the bowl below: the total is smallest at exactly one place.</p>
-  <div class="para-card">
-    <div class="para-box"><canvas id="para"></canvas></div>
-    <div class="para-foot">
-      <button class="btn primary" id="snapBtn">↧ snap guess to the minimum</button>
-      <span class="caption" id="para-cap" style="margin:0"></span>
+  <!-- ===================== 3. VARIANCE (DISSECTION) ===================== -->
+  <div class="sec-head"><div class="eyebrow">measure 2 · spread</div><h2>Variance — built one piece at a time</h2>
+    <p class="lead">Variance measures spread as the average squared distance from the mean. The formula looks dense, so let’s light up one piece at a time and watch what each does to the picture.</p></div>
+  <div class="formula-band var">
+    <div class="def"><b>Definition.</b> Sample variance <span data-tex="s^2=\frac{1}{n-1}\sum_{i=1}^{n}(x_i-\bar{x})^2"></span> &nbsp;·&nbsp; population variance <span data-tex="\sigma^2=\frac{1}{N}\sum (x_i-\mu)^2=E[(X-\mu)^2]"></span>.</div>
+  </div>
+  <div class="card">
+    <div class="diss-formula" id="dissFormula" data-tex="s^2=\htmlClass{kt-div}{\frac{1}{n-1}}\htmlClass{kt-sum}{\sum_{i=1}^{n}}\htmlClass{kt-sq}{\Bigl(\htmlClass{kt-dev}{x_i-\bar{x}}\Bigr)^{2}}"></div>
+    <div class="step-row" id="stepRow">
+      <button class="step-btn" data-step="1">1 · deviation</button>
+      <button class="step-btn" data-step="2">2 · square it</button>
+      <button class="step-btn" data-step="3">3 · sum</button>
+      <button class="step-btn" data-step="4">4 · ÷ (n−1)</button>
     </div>
+    <div class="canvas-box h-diss"><canvas id="diss"></canvas></div>
+    <div class="diss-cap" id="dissCap"></div>
   </div>
-  <p class="body" style="margin-top:18px">The minimum sits <b>exactly at the mean</b>. Of every possible centre, the mean is the one that makes the total squared distance as small as possible — it is the <b>least-squares</b> centre. (Curious aside: if you added up <em>un-squared</em> distances instead, the winner would be the <b>median</b>. Squaring is what crowns the mean.) This single idea is the seed of linear regression.</p>
+  <div class="note">Why <b>square</b> the distances? Two reasons you can see above: signed deviations cancel to zero (so raw distances can’t measure spread), and squaring <b>punishes far points</b> — twice as far makes a square <b>four times</b> bigger.</div>
 
-  <!-- ===================== GO DEEPER ===================== -->
-  <div class="sec-head"><div class="eyebrow">go deeper</div><h2>The fine print</h2></div>
-
-  <details>
-    <summary>Why divide by n − 1 and not n? (Bessel’s correction)</summary>
-    <div class="inner">When you only have a <b>sample</b>, you measure spread around the <b>sample’s own mean</b> — and by Act 4, the points are as close to their own mean as mathematically possible (it’s the least-squares centre). So the squared distances come out a touch <b>too small</b> compared with spread around the true population mean you actually care about. Dividing by <span class="fx">n − 1</span> instead of <span class="fx">n</span> nudges the estimate back up to compensate. <br><br>The “<b>degrees of freedom</b>” view: once you know the mean and any <span class="fx">n − 1</span> of the points, the last point is forced (the deviations must sum to zero). Only <span class="fx">n − 1</span> distances are truly free — so we average over <span class="fx">n − 1</span>. Flip the toggle above and watch the variance jump. For a whole <b>population</b>, you divide by <span class="fx">n</span>.</div>
-  </details>
-
-  <details>
-    <summary>Sample vs population: x̄ &amp; s² vs μ &amp; σ²</summary>
-    <div class="inner">Same idea, two contexts. <b>Sample</b> = the data in front of you: mean <span class="fx">x̄ = (1/n) Σ xᵢ</span>, variance <span class="fx">s² = (1/(n−1)) Σ(xᵢ−x̄)²</span>. <b>Population</b> = the whole world you’re really after: mean <span class="fx">μ = (1/N) Σ xᵢ</span>, variance <span class="fx">σ² = (1/N) Σ(xᵢ−μ)² = E[(X−μ)²]</span>. And the expected value <span class="fx">E[X] = μ</span>. The sample numbers are your best <em>estimates</em> of the population ones.</div>
-  </details>
-
-  <details>
-    <summary>The worked example, step by step</summary>
-    <div class="inner">Data <span class="fx">2, 4.5, 6, 7.5, 10</span> → mean <span class="fx">6.0</span>. Deviations <span class="fx">−4, −1.5, 0, +1.5, +4</span>; squared <span class="fx">16, 2.25, 0, 2.25, 16</span>; sum <span class="fx">36.5</span>. Sample variance <span class="fx">= 36.5 / (5−1) = 9.125</span>, so SD <span class="fx">= √9.125 ≈ 3.02</span>. (Load the <b>5 points</b> preset to see exactly this on the stage.)</div>
-  </details>
-
-  <!-- ===================== 3D BONUS ===================== -->
-  <div class="sec-head"><div class="eyebrow">bonus · in 2 dimensions</div><h2>The bowl becomes a paraboloid</h2></div>
-  <p class="body">The “total squared distance” parabola from Act 4 has a 3-D twin. Give each point an <span class="fx">(x, y)</span> position and the total squared distance to a candidate centre <span class="fx">(a, b)</span> traces a smooth <b>bowl</b> — a paraboloid. Its lowest point sits exactly at the <b>centroid</b> <span class="fx">(x̄, ȳ)</span>: the 2-D mean. Drag to rotate.</p>
-  <div class="threed-card">
-    <div id="threed-mount">
-      <div class="threed-ph" id="threed-ph">
-        <div>A rotatable 3-D surface (loads Plotly, ~1&nbsp;MB). Best on desktop.</div>
-        <button class="btn primary" id="load3d">Load the 3-D view</button>
+  <!-- ===================== 4. WHY n-1 ===================== -->
+  <div class="sec-head"><div class="eyebrow">measure 2 · the fine print</div><h2>Why divide by n − 1, not n?</h2>
+    <p class="lead">Step 4 divided by n − 1, not n. Here’s the reason, made visible. We sample many times from a population whose <i>true</i> variance we know, and compare the two recipes.</p></div>
+  <div class="card">
+    <div class="ctl-row">
+      <span>population:</span>
+      <button class="chip on" data-pop="normal">Normal</button>
+      <button class="chip" data-pop="uniform">Uniform</button>
+      <button class="chip" data-pop="skew">Skewed</button>
+      <span style="margin-left:10px">sample size n = <b id="nlbl" class="num">5</b></span>
+      <input type="range" id="nSlider" min="2" max="30" value="5" style="width:120px">
+    </div>
+    <div class="ctl-row">
+      <button class="btn primary" id="draw1">draw 1 sample</button>
+      <button class="btn gold" id="draw1000">draw 1000</button>
+      <button class="btn" id="simReset">reset</button>
+    </div>
+    <div class="sim-grid">
+      <div class="canvas-box h-sim"><canvas id="sim"></canvas></div>
+      <div>
+        <div class="legend">
+          <div class="li"><span class="sw" style="background:var(--mean)"></span> true σ² = 1.00</div>
+          <div class="li"><span class="sw" style="background:var(--sd)"></span> ÷ (n−1) average → lands on σ²</div>
+          <div class="li"><span class="sw" style="background:var(--devNeg)"></span> ÷ n average → falls short</div>
+          <div class="li"><span class="sw dash" style="border-color:var(--devNeg)"></span> where ÷ n lands: σ²·(n−1)/n</div>
+        </div>
+        <div class="sim-cap" id="simCap"></div>
       </div>
     </div>
-    <p class="caption" id="cap3d" style="margin-top:12px"></p>
+  </div>
+  <div class="note">The <b>÷ n</b> recipe is <b>biased low</b> — it averages out to <span data-tex="\sigma^2\frac{n-1}{n}"></span>, below the truth. Dividing by <b>n − 1</b> corrects it exactly (unbiased). The gap is <span data-tex="1/n"></span> — worst for small samples, vanishing as n grows.</div>
+  <p class="body"><b>The intuition:</b> the deviations are measured from the <i>sample’s own</i> mean, which sits as close to its points as mathematically possible — closer than the true population mean does. So the squared distances come out a touch too small. There’s also a <b>degrees-of-freedom</b> view: once you know the mean and any n − 1 points, the last point is forced (the deviations must sum to zero) — so only <b>n − 1</b> of them are free.</p>
+
+  <!-- ===================== 5. SD ===================== -->
+  <div class="sec-head"><div class="eyebrow">measure 3 · spread, readable</div><h2>Standard deviation — back to a length</h2>
+    <p class="lead">Variance is an area in squared units. Take its square root and you get a length in the data’s own units: the typical distance of a point from the mean.</p></div>
+  <div class="formula-band sd">
+    <div class="def"><b>Definition.</b> <span data-tex="s=\sqrt{s^2}"></span> &nbsp;·&nbsp; population <span data-tex="\sigma=\sqrt{\sigma^2}"></span>. Same units as the data.</div>
+  </div>
+  <div class="card">
+    <div class="canvas-box h-sd"><canvas id="sdcanvas"></canvas></div>
+  </div>
+  <div class="note violet">Standard deviation is <b>not</b> the plain average of the distances. Because of the squaring, far points count more — so SD is a bit larger than the average gap (that plain average is a different quantity, the “mean absolute deviation”).</div>
+
+  <!-- ===================== 6. SAMPLE vs POPULATION ===================== -->
+  <div class="sec-head"><div class="eyebrow">two contexts</div><h2>Sample vs population</h2>
+    <p class="lead">Same ideas, two settings. The only changes are the notation and the divisor — highlighted below. The sample numbers are your best <i>estimates</i> of the population ones.</p></div>
+  <div class="twopanel">
+    <div class="panel">
+      <div class="tag">the data in front of you</div><h3>Sample</h3>
+      <div class="row"><div class="nm">mean</div><span data-tex="\bar{x}=\frac{1}{n}\sum x_i"></span></div>
+      <div class="row"><div class="nm">variance</div><span data-tex="s^2=\frac{1}{n-1}\sum (x_i-\bar{x})^2"></span></div>
+      <div class="row"><div class="nm">std deviation</div><span data-tex="s=\sqrt{s^2}"></span></div>
+    </div>
+    <div class="panel">
+      <div class="tag">the whole world you’re after</div><h3>Population</h3>
+      <div class="row"><div class="nm">mean</div><span data-tex="\mu=\frac{1}{N}\sum x_i"></span></div>
+      <div class="row"><div class="nm">variance</div><span data-tex="\sigma^2=\frac{1}{N}\sum (x_i-\mu)^2"></span></div>
+      <div class="row"><div class="nm">std deviation</div><span data-tex="\sigma=\sqrt{\sigma^2}"></span></div>
+    </div>
   </div>
 
-  <footer>part of <a href="https://samitstat.github.io/Stat_gn/">Stat_gn</a> · drag the points, drag the guess line, toggle ◐ for dark mode</footer>
+  <footer>part of <a href="https://samitstat.github.io/Stat_gn/">Stat_gn</a> · drag the points, step through the variance, run the n−1 simulation · ◐ toggles dark mode</footer>
 </div>
 
-<script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+<script defer>
 "use strict";
 const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
 const PAL = {
-  light:{ stage:'#FFFFFF', ink:'#1C1B1A', soft:'#6A6560', faint:'#B7AE9F', line:'#E7DFD2',
-    mean:'#2E6F6A', devNeg:'#3B6FB0', devPos:'#C25A3C', variance:'#B98A1F', sd:'#7A4FB0', live:'#E4572E',
-    disk:'#3A352E', diskEdge:'#FFFFFF', varFill:'rgba(185,138,31,.20)', sdFill:'rgba(122,79,176,.13)' },
-  dark:{ stage:'#1E1C17', ink:'#EDE7DB', soft:'#A39C8E', faint:'#6E675B', line:'#322E25',
-    mean:'#5BBBB1', devNeg:'#6BA3E0', devPos:'#E0876A', variance:'#E0B24A', sd:'#B596E6', live:'#FF7A52',
-    disk:'#EDE7DB', diskEdge:'#1E1C17', varFill:'rgba(224,178,74,.18)', sdFill:'rgba(181,150,230,.16)' }
+  light:{ ink:'#1C1B1A', soft:'#6A6560', faint:'#B7AE9F', line:'#E7DFD2',
+    mean:'#2E6F6A', devNeg:'#3B6FB0', devPos:'#C25A3C', variance:'#B07F12', sd:'#7A4FB0', live:'#E4572E', good:'#2E8B57',
+    disk:'#3A352E', edge:'#FFFFFF', varFill:'rgba(176,127,18,.20)', sdFill:'rgba(122,79,176,.16)' },
+  dark:{ ink:'#EDE7DB', soft:'#A39C8E', faint:'#6E675B', line:'#322E25',
+    mean:'#5BBBB1', devNeg:'#6BA3E0', devPos:'#E0876A', variance:'#E0B24A', sd:'#B596E6', live:'#FF7A52', good:'#5FC98C',
+    disk:'#EDE7DB', edge:'#1E1C17', varFill:'rgba(224,178,74,.18)', sdFill:'rgba(181,150,230,.18)' }
 };
 let theme = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark':'light';
 let C = PAL[theme];
+const fmt=(x,d)=>{ if(!isFinite(x)) return '—'; return (+x.toFixed(d)).toString(); };
+function sizeCanvas(cv,ctx){ const dpr=devicePixelRatio||1, r=cv.getBoundingClientRect();
+  cv.width=Math.round(r.width*dpr); cv.height=Math.round(r.height*dpr); ctx.setTransform(dpr,0,0,dpr,0,0); return {w:r.width,h:r.height}; }
+function niceTicks(x0,x1,target){ const span=x1-x0, raw=span/target, mag=Math.pow(10,Math.floor(Math.log10(raw)));
+  const step=([1,2,2.5,5,10].find(s=>raw<=s*mag)||10)*mag, t=[];
+  for(let v=Math.ceil(x0/step)*step; v<=x1+1e-9; v+=step) t.push(+v.toFixed(6)); return t; }
 
-/* ---------------- state ---------------- */
-let data = [2, 4.5, 6, 7.5, 10];
-let dom = {x0:0, x1:12};
-const layers = { dev:true, sq:true, sd:false };
-let divisor = 'sample';          // 'sample' (n-1) or 'pop' (n)
-
-const mean = a => a.reduce((s,x)=>s+x,0)/a.length;
-function stats(){
-  const n=data.length, m=mean(data);
-  let ss=0; for(const x of data) ss+=(x-m)*(x-m);
-  const denom = divisor==='sample' ? Math.max(1,n-1) : n;
-  const v = ss/denom, sd=Math.sqrt(v);
-  return {n,m,ss,v,sd,denom};
-}
-function fitDomain(){
-  const lo=Math.min(...data), hi=Math.max(...data);
-  const pad=Math.max((hi-lo)*0.28, 1.2);
-  dom={x0:lo-pad, x1:hi+pad};
-}
-
-/* ---------------- stage canvas ---------------- */
-const cv = document.getElementById('stage'), cx = cv.getContext('2d');
-let W=0,H=0, dpr=1;
-const ML=46, MR=24;               // left/right margin
-let AXIS_Y=0;
-function plotW(){ return W-ML-MR; }
-const d2p = x => ML + (x-dom.x0)/(dom.x1-dom.x0)*plotW();
-const p2d = px => dom.x0 + (px-ML)/plotW()*(dom.x1-dom.x0);
-
-function sizeCanvas(canvas, ctx){
-  dpr = window.devicePixelRatio||1;
-  const r = canvas.getBoundingClientRect();
-  canvas.width = Math.round(r.width*dpr); canvas.height = Math.round(r.height*dpr);
-  ctx.setTransform(dpr,0,0,dpr,0,0);
-  return {w:r.width, h:r.height};
-}
-function resizeStage(){ const s=sizeCanvas(cv,cx); W=s.w; H=s.h; AXIS_Y=H-58; requestDraw(); }
-
-function niceTicks(x0,x1,target){
-  const span=x1-x0, raw=span/target, mag=Math.pow(10,Math.floor(Math.log10(raw)));
-  const steps=[1,2,2.5,5,10], step=(steps.find(s=>raw<=s*mag)||10)*mag;
-  const t=[]; for(let v=Math.ceil(x0/step)*step; v<=x1+1e-9; v+=step) t.push(+v.toFixed(6));
-  return t;
+/* ---------------- shared dataset + stats ---------------- */
+let data=[2,4.5,6,7.5,10], dom={x0:0,x1:12}, showDev=false;
+const mean=a=>a.reduce((s,x)=>s+x,0)/a.length;
+function stat(){ const n=data.length,m=mean(data); let ss=0; for(const x of data) ss+=(x-m)*(x-m);
+  const v=ss/Math.max(1,n-1), sd=Math.sqrt(v); return {n,m,ss,v,sd}; }
+function fitDomain(){ const lo=Math.min(...data),hi=Math.max(...data),pad=Math.max((hi-lo)*0.3,1.2); dom={x0:lo-pad,x1:hi+pad}; }
+function refreshAll(){ const s=stat();
+  document.getElementById('tv-mean').textContent=fmt(s.m,2);
+  document.getElementById('tv-var').textContent=fmt(s.v,2)+' units²';
+  document.getElementById('tv-sd').textContent=fmt(s.sd,2);
+  document.getElementById('r-mean').textContent=fmt(s.m,2);
+  document.getElementById('r-var').textContent=fmt(s.v,2);
+  document.getElementById('r-sd').textContent=fmt(s.sd,2);
+  let L=0,R=0; for(const x of data){ if(x<s.m)L+=s.m-x; else R+=x-s.m; }
+  document.getElementById('balance').innerHTML='pull: <b style="color:var(--devNeg)">'+fmt(L,1)+'</b> = <b style="color:var(--devPos)">'+fmt(R,1)+'</b> → balanced';
+  drawStage(); drawDiss(); drawSD();
 }
 
-let animMean=null, dragIdx=-1, raf=null;
-function tick(){
-  raf=null;
-  const {m}=stats();
-  if(animMean===null) animMean=m;
-  animMean += (m-animMean)*0.25;
-  drawStage();
-  const settling = Math.abs(m-animMean) > (dom.x1-dom.x0)*0.0006;
-  if(dragIdx>=0 || settling) raf=requestAnimationFrame(tick);
-}
-function requestDraw(){ if(!raf) raf=requestAnimationFrame(tick); }
-
-function diskXY(i){ return { x:d2p(data[i]), y:AXIS_Y }; }
-
-function drawStage(){
-  const {n,m,v,sd}=stats();
-  cx.clearRect(0,0,W,H);
-  const devs = data.map(x=>x-m);
-  const maxAbs = Math.max(0.0001, ...devs.map(Math.abs));
-  const ppu = plotW()/(dom.x1-dom.x0);
-  const availTop = AXIS_Y-30;
-  const sqScale = Math.min(1, availTop/(maxAbs*ppu));
-
-  // SD band
-  if(layers.sd && sd>0){
-    cx.fillStyle=C.sdFill;
-    const a=d2p(m-sd), b=d2p(m+sd);
-    cx.fillRect(a, 24, b-a, AXIS_Y-24);
-    cx.strokeStyle=C.sd; cx.lineWidth=1.4; cx.setLineDash([5,4]);
-    cx.beginPath(); cx.moveTo(a,24); cx.lineTo(a,AXIS_Y); cx.moveTo(b,24); cx.lineTo(b,AXIS_Y); cx.stroke();
-    cx.setLineDash([]);
-    cx.fillStyle=C.sd; cx.font='600 12px "IBM Plex Mono",monospace'; cx.textAlign='center';
-    cx.fillText('±1 SD = '+fmt(sd,2)+' wide', (a+b)/2, 18);
-  }
-
-  // axis
-  cx.strokeStyle=C.line; cx.lineWidth=1.5;
-  cx.beginPath(); cx.moveTo(ML,AXIS_Y); cx.lineTo(W-MR,AXIS_Y); cx.stroke();
+/* ---------------- stage canvas (mean / balance) ---------------- */
+const cv=document.getElementById('stage'), cx=cv.getContext('2d'); let SW=0,SH=0,AX=0,dragIdx=-1,raf=null,animMean=null;
+const ML=42,MR=22;
+const sd2p=x=>ML+(x-dom.x0)/(dom.x1-dom.x0)*(SW-ML-MR);
+const sp2d=px=>dom.x0+(px-ML)/(SW-ML-MR)*(dom.x1-dom.x0);
+function resizeStage(){ const s=sizeCanvas(cv,cx); SW=s.w; SH=s.h; AX=SH-52; }
+function tick(){ raf=null; const m=mean(data); if(animMean===null)animMean=m; animMean+=(m-animMean)*0.25; drawStage();
+  if(dragIdx>=0||Math.abs(m-animMean)>(dom.x1-dom.x0)*0.0006) raf=requestAnimationFrame(tick); }
+function reqStage(){ if(!raf) raf=requestAnimationFrame(tick); }
+function drawStage(){ if(!SW) return; const s=stat(); cx.clearRect(0,0,SW,SH);
+  cx.strokeStyle=C.line; cx.lineWidth=1.5; cx.beginPath(); cx.moveTo(ML,AX); cx.lineTo(SW-MR,AX); cx.stroke();
   cx.fillStyle=C.faint; cx.font='11px "IBM Plex Mono",monospace'; cx.textAlign='center'; cx.textBaseline='top';
-  for(const t of niceTicks(dom.x0,dom.x1,6)){
-    const px=d2p(t); if(px<ML-1||px>W-MR+1) continue;
-    cx.strokeStyle=C.line; cx.beginPath(); cx.moveTo(px,AXIS_Y); cx.lineTo(px,AXIS_Y+5); cx.stroke();
-    cx.fillText(fmt(t, Number.isInteger(t)?0:1), px, AXIS_Y+8);
-  }
+  for(const t of niceTicks(dom.x0,dom.x1,6)){ const px=sd2p(t); if(px<ML-1||px>SW-MR+1)continue;
+    cx.strokeStyle=C.line; cx.beginPath(); cx.moveTo(px,AX); cx.lineTo(px,AX+5); cx.stroke(); cx.fillStyle=C.faint; cx.fillText(fmt(t,Number.isInteger(t)?0:1),px,AX+8); }
+  // deviations
+  if(showDev){ cx.lineWidth=2.5; cx.textBaseline='bottom';
+    data.forEach(x=>{ const d=x-s.m; if(Math.abs(d)<1e-9)return; const px=sd2p(x),pm=sd2p(s.m),col=d<0?C.devNeg:C.devPos;
+      cx.strokeStyle=col; cx.beginPath(); cx.moveTo(pm,AX); cx.lineTo(px,AX); cx.stroke();
+      cx.fillStyle=col; cx.font='600 11px "IBM Plex Mono",monospace'; cx.fillText((d>0?'+':'')+fmt(d,1),(px+pm)/2,AX-4); }); }
+  // fulcrum
+  const fx=sd2p(animMean===null?s.m:animMean);
+  cx.strokeStyle=C.mean; cx.globalAlpha=.4; cx.lineWidth=1; cx.setLineDash([3,4]); cx.beginPath(); cx.moveTo(sd2p(s.m),26); cx.lineTo(sd2p(s.m),AX); cx.stroke(); cx.setLineDash([]); cx.globalAlpha=1;
+  cx.fillStyle=C.mean; cx.beginPath(); cx.moveTo(fx,AX+2); cx.lineTo(fx-11,AX+20); cx.lineTo(fx+11,AX+20); cx.closePath(); cx.fill();
+  cx.fillStyle=C.mean; cx.font='600 12px "IBM Plex Mono",monospace'; cx.textAlign='center'; cx.textBaseline='top'; cx.fillText('x̄ = '+fmt(s.m,2),fx,AX+23);
+  // disks
+  data.forEach((x,i)=>{ const px=sd2p(x),r=(i===dragIdx)?11:9; cx.beginPath(); cx.arc(px,AX,r,0,7);
+    cx.fillStyle=(i===dragIdx)?C.live:C.disk; cx.fill(); cx.lineWidth=2; cx.strokeStyle=C.edge; cx.stroke(); });
+}
+cv.addEventListener('pointerdown',e=>{ const r=cv.getBoundingClientRect(),mx=e.clientX-r.left,my=e.clientY-r.top; let best=18;dragIdx=-1;
+  data.forEach((x,i)=>{ const d=Math.hypot(sd2p(x)-mx,AX-my); if(d<best){best=d;dragIdx=i;} });
+  if(dragIdx>=0){ cv.setPointerCapture(e.pointerId); reqStage(); } });
+cv.addEventListener('pointermove',e=>{ if(dragIdx<0)return; const r=cv.getBoundingClientRect();
+  data[dragIdx]=Math.min(dom.x1,Math.max(dom.x0,sp2d(e.clientX-r.left))); refreshAll(); reqStage(); });
+function endDrag(){ if(dragIdx>=0){dragIdx=-1; reqStage();} }
+cv.addEventListener('pointerup',endDrag); cv.addEventListener('pointercancel',endDrag);
 
-  // squares (true squares above each point; side ∝ |dev|)
-  if(layers.sq){
-    cx.textBaseline='middle';
-    data.forEach((x,i)=>{
-      const dv=Math.abs(devs[i]); if(dv<1e-9) return;
-      const side=dv*ppu*sqScale, px=d2p(x);
-      const left=px-side/2, top=AXIS_Y-side-6;
-      cx.fillStyle=C.varFill; cx.strokeStyle=C.variance; cx.lineWidth=1;
-      cx.fillRect(left,top,side,side); cx.strokeRect(left,top,side,side);
-      if(side>26){ cx.fillStyle=C.variance; cx.font='600 11px "IBM Plex Mono",monospace'; cx.textAlign='center';
-        cx.fillText(fmt(devs[i]*devs[i],2), px, top+side/2); }
-    });
-  }
-
-  // deviation arrows along axis
-  if(layers.dev){
-    cx.textBaseline='bottom'; cx.lineWidth=2.5;
-    data.forEach((x,i)=>{
-      if(Math.abs(devs[i])<1e-9) return;
-      const px=d2p(x), pm=d2p(m), col = devs[i]<0?C.devNeg:C.devPos;
-      cx.strokeStyle=col; cx.beginPath(); cx.moveTo(pm,AXIS_Y); cx.lineTo(px,AXIS_Y); cx.stroke();
-      cx.fillStyle=col; cx.font='600 11px "IBM Plex Mono",monospace'; cx.textAlign='center';
-      cx.fillText((devs[i]>0?'+':'')+fmt(devs[i],1), (px+pm)/2, AXIS_Y-4);
-    });
-  }
-
-  // fulcrum (slides to mean)
-  const fx=d2p(animMean);
-  cx.fillStyle=C.mean; cx.beginPath();
-  cx.moveTo(fx,AXIS_Y+2); cx.lineTo(fx-11,AXIS_Y+20); cx.lineTo(fx+11,AXIS_Y+20); cx.closePath(); cx.fill();
-  cx.fillStyle=C.mean; cx.font='600 12px "IBM Plex Mono",monospace'; cx.textAlign='center'; cx.textBaseline='top';
-  cx.fillText('x̄ = '+fmt(m,2), fx, AXIS_Y+24);
-  // mean vertical guide
-  cx.strokeStyle=C.mean; cx.globalAlpha=.35; cx.lineWidth=1; cx.setLineDash([3,4]);
-  cx.beginPath(); cx.moveTo(d2p(m),24); cx.lineTo(d2p(m),AXIS_Y); cx.stroke();
-  cx.setLineDash([]); cx.globalAlpha=1;
-
-  // data disks
-  data.forEach((x,i)=>{
-    const px=d2p(x), r=(i===dragIdx)?11:9;
-    cx.beginPath(); cx.arc(px,AXIS_Y,r,0,7);
-    cx.fillStyle=(i===dragIdx)?C.live:C.disk; cx.fill();
-    cx.lineWidth=2; cx.strokeStyle=C.diskEdge; cx.stroke();
-  });
-
-  updateReadout({n,m,v,sd});
+/* ---------------- variance dissection ---------------- */
+const dc=document.getElementById('diss'), dcx=dc.getContext('2d'); let DW=0,DH=0,DAX=0,step=1;
+const dd2p=x=>ML+(x-dom.x0)/(dom.x1-dom.x0)*(DW-ML-MR);
+function resizeDiss(){ const s=sizeCanvas(dc,dcx); DW=s.w; DH=s.h; DAX=DH-40; }
+function setStep(k){ step=k; document.querySelectorAll('.step-btn').forEach(b=>b.classList.toggle('on',+b.dataset.step===k));
+  const map={1:'kt-dev',2:'kt-sq',3:'kt-sum',4:'kt-div'};
+  ['kt-dev','kt-sq','kt-sum','kt-div'].forEach(c=>document.querySelectorAll('.'+c).forEach(el=>el.classList.toggle('kt-hl',c===map[k])));
+  const s=stat();
+  const caps={
+    1:`<b>Deviation</b> (xᵢ − x̄): how far each point sits from the mean, with a sign. Blue = below, clay = above. They always sum to <b>zero</b>.`,
+    2:`<b>Square each one</b>: (xᵢ − x̄)². Signs vanish and a far point’s square dwarfs a near one’s — here the ±4 squares (area 16) are ~7× the ±1.5 squares (area 2.25).`,
+    3:`<b>Add them up</b>: Σ(xᵢ − x̄)² = <b>${fmt(s.ss,2)}</b>. One pile of total squared area.`,
+    4:`<b>Average over n − 1 = ${s.n-1}</b>: ${fmt(s.ss,2)} ÷ ${s.n-1} = <b>${fmt(s.v,2)}</b>. That’s the variance — the typical squared distance.`
+  };
+  document.getElementById('dissCap').innerHTML=caps[k]; drawDiss();
+}
+function drawDiss(){ if(!DW) return; const s=stat(); dcx.clearRect(0,0,DW,DH);
+  const devs=data.map(x=>x-s.m), ppu=(DW-ML-MR)/(dom.x1-dom.x0), maxAbs=Math.max(.0001,...devs.map(Math.abs));
+  const availTop=DAX-30, sqScale=Math.min(1,availTop/(maxAbs*ppu));
+  // squares (steps>=2)
+  if(step>=2){ dcx.textBaseline='middle'; dcx.textAlign='center';
+    data.forEach((x,i)=>{ const dv=Math.abs(devs[i]); if(dv<1e-9)return; const side=dv*ppu*sqScale,px=dd2p(x),top=DAX-side-6;
+      dcx.fillStyle=C.varFill; dcx.strokeStyle=C.variance; dcx.lineWidth=1; dcx.fillRect(px-side/2,top,side,side); dcx.strokeRect(px-side/2,top,side,side);
+      if(side>24){ dcx.fillStyle=C.variance; dcx.font='600 11px "IBM Plex Mono",monospace'; dcx.fillText(fmt(devs[i]*devs[i],2),px,top+side/2); } }); }
+  // axis
+  dcx.strokeStyle=C.line; dcx.lineWidth=1.5; dcx.beginPath(); dcx.moveTo(ML,DAX); dcx.lineTo(DW-MR,DAX); dcx.stroke();
+  // mean line
+  dcx.strokeStyle=C.mean; dcx.globalAlpha=.5; dcx.setLineDash([3,4]); dcx.beginPath(); dcx.moveTo(dd2p(s.m),18); dcx.lineTo(dd2p(s.m),DAX); dcx.stroke(); dcx.setLineDash([]); dcx.globalAlpha=1;
+  dcx.fillStyle=C.mean; dcx.font='600 11px "IBM Plex Mono",monospace'; dcx.textAlign='center'; dcx.textBaseline='bottom'; dcx.fillText('x̄',dd2p(s.m),16);
+  // deviation arrows (step 1) ; faded for later steps
+  dcx.lineWidth=2.5; dcx.textBaseline='bottom';
+  data.forEach((x,i)=>{ if(Math.abs(devs[i])<1e-9)return; const px=dd2p(x),pm=dd2p(s.m),col=devs[i]<0?C.devNeg:C.devPos;
+    dcx.globalAlpha=(step===1)?1:0.32; dcx.strokeStyle=col; dcx.beginPath(); dcx.moveTo(pm,DAX); dcx.lineTo(px,DAX); dcx.stroke();
+    if(step===1){ dcx.fillStyle=col; dcx.font='600 11px "IBM Plex Mono",monospace'; dcx.textAlign='center'; dcx.fillText((devs[i]>0?'+':'')+fmt(devs[i],1),(px+pm)/2,DAX-4); } dcx.globalAlpha=1; });
+  // disks
+  data.forEach(x=>{ const px=dd2p(x); dcx.beginPath(); dcx.arc(px,DAX,7,0,7); dcx.fillStyle=C.disk; dcx.fill(); dcx.lineWidth=2; dcx.strokeStyle=C.edge; dcx.stroke(); });
+  // sum / average banner (steps 3,4)
+  if(step>=3){ const txt = step===3 ? 'Σ(xᵢ−x̄)² = '+fmt(s.ss,2) : 'Σ ÷ (n−1) = '+fmt(s.ss,2)+' ÷ '+(s.n-1)+' = '+fmt(s.v,2)+'  (variance)';
+    dcx.fillStyle=C.variance; dcx.font='600 14px "IBM Plex Mono",monospace'; dcx.textAlign='center'; dcx.textBaseline='top'; dcx.fillText(txt,DW/2,8); }
 }
 
-function fmt(x,d){ if(!isFinite(x)) return '—'; const s=x.toFixed(d); return s.replace(/\.?0+$/,'')===''?'0':(+s).toFixed(d); }
-
-function updateReadout(s){
-  document.getElementById('r-mean').textContent = fmt(s.m,2);
-  document.getElementById('r-mean-f').textContent = '(1/'+s.n+') · Σxᵢ';
-  document.getElementById('r-var').textContent = fmt(s.v,2);
-  const st=stats();
-  document.getElementById('r-var-f').textContent = 'Σ(xᵢ−x̄)² / '+(divisor==='sample'?'(n−1)':'n')+' = '+fmt(st.ss,2)+' / '+st.denom;
-  document.getElementById('r-sd').textContent = fmt(s.sd,2);
-  document.getElementById('r-sd-f').textContent = '√'+fmt(s.v,2)+'  · same units as data';
-  // balance pulls
-  const m=s.m; let L=0,R=0; for(const x of data){ if(x<m) L+=m-x; else R+=x-m; }
-  document.getElementById('r-balance').innerHTML =
-    'left pull <b>'+fmt(L,1)+'</b> &nbsp;⇌&nbsp; <b>'+fmt(R,1)+'</b> right pull<br><span style="color:var(--faint)">equal → the mean is the balance point</span>';
-  setCaption(s);
+/* ---------------- SD: area -> length ---------------- */
+const sc=document.getElementById('sdcanvas'), scx=sc.getContext('2d'); let CW=0,CH=0;
+function resizeSD(){ const s=sizeCanvas(sc,scx); CW=s.w; CH=s.h; }
+function drawSD(){ if(!CW) return; const s=stat(); scx.clearRect(0,0,CW,CH);
+  const side=Math.min(CH-70, CW*0.30); const sqx=40, sqy=20;
+  // variance square (area)
+  scx.fillStyle=C.varFill; scx.strokeStyle=C.variance; scx.lineWidth=1.5; scx.fillRect(sqx,sqy,side,side); scx.strokeRect(sqx,sqy,side,side);
+  scx.fillStyle=C.variance; scx.font='600 13px "IBM Plex Mono",monospace'; scx.textAlign='center'; scx.textBaseline='middle';
+  scx.fillText('area = s²', sqx+side/2, sqy+side/2-8); scx.fillText('= '+fmt(s.v,2)+' units²', sqx+side/2, sqy+side/2+10);
+  // arrow: square root -> a length
+  const ay=sqy+side+30, lx0=sqx, lpx=Math.min((CW-90), CW*0.55);
+  scx.strokeStyle=C.soft; scx.setLineDash([4,4]); scx.lineWidth=1.2; scx.beginPath(); scx.moveTo(sqx+side/2,sqy+side); scx.lineTo(sqx+side/2,ay-6); scx.stroke(); scx.setLineDash([]);
+  scx.fillStyle=C.sd; scx.font='600 13px "IBM Plex Mono",monospace'; scx.textAlign='left'; scx.textBaseline='bottom';
+  scx.fillText('√(area)  →  a length  s = '+fmt(s.sd,2)+' units', sqx, ay-10);
+  // SD length bar
+  const barLen = side; // visually the side of the square laid down
+  scx.strokeStyle=C.sd; scx.lineWidth=4; scx.beginPath(); scx.moveTo(lx0,ay+16); scx.lineTo(lx0+barLen,ay+16); scx.stroke();
+  scx.fillStyle=C.sd; scx.beginPath(); scx.arc(lx0,ay+16,4,0,7); scx.arc(lx0+barLen,ay+16,4,0,7); scx.fill();
+  scx.textAlign='center'; scx.textBaseline='top'; scx.font='600 12px "IBM Plex Mono",monospace'; scx.fillText('s = '+fmt(s.sd,2),lx0+barLen/2,ay+22);
+  scx.fillStyle=C.soft; scx.font='13px "IBM Plex Mono",monospace'; scx.textAlign='left'; scx.textBaseline='middle';
+  scx.fillText('the side of the variance square,', lpx+20, sqy+side*0.35);
+  scx.fillText('laid back on the data’s axis —', lpx+20, sqy+side*0.35+20);
+  scx.fillText('the typical distance from the mean.', lpx+20, sqy+side*0.35+40);
 }
 
-let lastCapKey='';
-function setCaption(s){
-  const spread = s.sd < (dom.x1-dom.x0)*0.06 ? 'tight' : s.sd > (dom.x1-dom.x0)*0.18 ? 'wide' : 'moderate';
-  const key = spread+layerKey()+divisor;
-  if(key===lastCapKey && dragIdx<0) {} // allow live update anyway
-  lastCapKey=key;
-  let msg;
-  if(dragIdx>=0) msg = `Dragging — mean follows to <b>${fmt(s.m,2)}</b>, SD now <b>${fmt(s.sd,2)}</b>. Pull a point outward and watch its square balloon.`;
-  else if(spread==='tight') msg = `Tightly clustered: SD ≈ <b>${fmt(s.sd,2)}</b>. The squares are small, the variance is low.`;
-  else if(spread==='wide') msg = `Widely spread: SD ≈ <b>${fmt(s.sd,2)}</b>. A few far points dominate the variance — their squares are huge.`;
-  else msg = `Spread is moderate: SD ≈ <b>${fmt(s.sd,2)}</b>. Drag a point to the edge and watch the variance jump.`;
-  document.getElementById('caption').innerHTML = msg;
+/* ---------------- n-1 simulation ---------------- */
+const mc=document.getElementById('sim'), mcx=mc.getContext('2d'); let MW=0,MH=0;
+let popKind='normal', simN=5, acc={J:0,sumN:0,sumN1:0}, hist=[], busy=false;
+const SIG2=1;
+function randNorm(){ let u=0,v=0; while(u===0)u=Math.random(); while(v===0)v=Math.random(); return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v); }
+function drawPop(){ // each scaled to mean ~ , variance = 1
+  if(popKind==='normal') return 5+randNorm();                       // σ²=1
+  if(popKind==='uniform'){ const h=Math.sqrt(3); return 5 + (Math.random()*2-1)*h; } // var=(2h)²/12=1
+  // skew: exponential rate 1 (var=1), shifted
+  return 4 + (-Math.log(1-Math.random()));                          // exp(1): var=1
 }
-function layerKey(){ return (layers.dev?'d':'')+(layers.sq?'s':'')+(layers.sd?'b':''); }
-
-/* ---------- stage interaction ---------- */
-function pickPoint(mx,my){
-  let best=18, idx=-1;
-  data.forEach((x,i)=>{ const d=Math.hypot(d2p(x)-mx, AXIS_Y-my); if(d<best){best=d; idx=i;} });
-  return idx;
+function oneSample(){ let s=0; const xs=new Array(simN); for(let i=0;i<simN;i++){ const x=drawPop(); xs[i]=x; s+=x; }
+  const m=s/simN; let ss=0; for(let i=0;i<simN;i++){ const d=xs[i]-m; ss+=d*d; }
+  const vN=ss/simN, vN1=ss/(simN-1); acc.J++; acc.sumN+=vN; acc.sumN1+=vN1;
+  const J=acc.J; if(J<60||J%Math.ceil(J/220)===0||J===1) hist.push({J,aN:acc.sumN/J,aN1:acc.sumN1/J}); }
+function simResetAll(){ acc={J:0,sumN:0,sumN1:0}; hist=[]; drawSim(); updateSimCap(); }
+function resizeSim(){ const s=sizeCanvas(mc,mcx); MW=s.w; MH=s.h; }
+function drawSim(){ if(!MW) return; const L=46,R=14,T=14,B=34, pw=MW-L-R, ph=MH-T-B;
+  mcx.clearRect(0,0,MW,MH);
+  const jmax=Math.max(20,acc.J), yMax=1.8;
+  const jx=J=>L+(Math.log10(Math.max(1,J)))/(Math.log10(jmax))*pw;
+  const vy=v=>T+ph-(v/yMax)*ph;
+  // grid + y ticks
+  mcx.strokeStyle=C.line; mcx.fillStyle=C.faint; mcx.font='10px "IBM Plex Mono",monospace'; mcx.textAlign='right'; mcx.textBaseline='middle';
+  for(let v=0; v<=yMax+1e-9; v+=0.5){ const y=vy(v); mcx.globalAlpha=.5; mcx.beginPath(); mcx.moveTo(L,y); mcx.lineTo(MW-R,y); mcx.stroke(); mcx.globalAlpha=1; mcx.fillText(v.toFixed(1),L-6,y); }
+  mcx.textAlign='center'; mcx.textBaseline='top'; mcx.fillText('samples drawn (log)', L+pw/2, MH-16);
+  // biased target dashed
+  const bt=SIG2*(simN-1)/simN;
+  mcx.strokeStyle=C.devNeg; mcx.setLineDash([5,4]); mcx.globalAlpha=.7; mcx.lineWidth=1.3; mcx.beginPath(); mcx.moveTo(L,vy(bt)); mcx.lineTo(MW-R,vy(bt)); mcx.stroke(); mcx.setLineDash([]); mcx.globalAlpha=1;
+  // true sigma2 line
+  mcx.strokeStyle=C.mean; mcx.lineWidth=2; mcx.beginPath(); mcx.moveTo(L,vy(SIG2)); mcx.lineTo(MW-R,vy(SIG2)); mcx.stroke();
+  // running-average curves
+  function curve(key,col){ mcx.strokeStyle=col; mcx.lineWidth=2; mcx.beginPath();
+    hist.forEach((p,i)=>{ const X=jx(p.J),Y=vy(p[key]); i?mcx.lineTo(X,Y):mcx.moveTo(X,Y); }); mcx.stroke(); }
+  if(hist.length){ curve('aN',C.devNeg); curve('aN1',C.sd);
+    [['aN1',C.sd],['aN',C.devNeg]].forEach(([k,col])=>{ const p=hist[hist.length-1]; mcx.fillStyle=col; mcx.beginPath(); mcx.arc(jx(p.J),vy(p[k]),4,0,7); mcx.fill(); }); }
 }
-cv.addEventListener('pointerdown', e=>{
-  const r=cv.getBoundingClientRect(), mx=e.clientX-r.left, my=e.clientY-r.top;
-  dragIdx=pickPoint(mx,my);
-  if(dragIdx>=0){ cv.setPointerCapture(e.pointerId); document.getElementById('hint').style.display='none'; requestDraw(); }
-});
-cv.addEventListener('pointermove', e=>{
-  if(dragIdx<0) return;
-  const r=cv.getBoundingClientRect();
-  data[dragIdx]=Math.min(dom.x1, Math.max(dom.x0, p2d(e.clientX-r.left)));
-  syncPara(); requestDraw();
-});
-function endDrag(){ if(dragIdx>=0){ dragIdx=-1; requestDraw(); } }
-cv.addEventListener('pointerup', endDrag);
-cv.addEventListener('pointercancel', endDrag);
-
-/* ---------------- parabola canvas ---------------- */
-const pcv=document.getElementById('para'), pctx=pcv.getContext('2d');
-let PW=0,PH=0, guessC=null, pdrag=false, snapRAF=null;
-const STRIP_Y = ()=> PH*0.30;
-function pd2p(x){ return ML + (x-dom.x0)/(dom.x1-dom.x0)*(PW-ML-MR); }
-function pp2d(px){ return dom.x0 + (px-ML)/(PW-ML-MR)*(dom.x1-dom.x0); }
-function SS(c){ let s=0; for(const x of data) s+=(x-c)*(x-c); return s; }
-function resizePara(){ const s=sizeCanvas(pcv,pctx); PW=s.w; PH=s.h; drawPara(); }
-function syncPara(){ drawPara(); }
-
-function drawPara(){
-  if(guessC===null) guessC = mean(data) + (dom.x1-mean(data))*0.45;
-  guessC=Math.min(dom.x1,Math.max(dom.x0,guessC));
-  pctx.clearRect(0,0,PW,PH);
-  const m=mean(data), sy=STRIP_Y();
-  // ---- top strip: points + guess line + squares to guess ----
-  pctx.strokeStyle=C.line; pctx.lineWidth=1.4;
-  pctx.beginPath(); pctx.moveTo(ML,sy); pctx.lineTo(PW-MR,sy); pctx.stroke();
-  // squares from each point to guess (small, capped)
-  const ppu=(PW-ML-MR)/(dom.x1-dom.x0);
-  const devs=data.map(x=>Math.abs(x-guessC)), maxAbs=Math.max(.0001,...devs);
-  const sqScale=Math.min(1,(sy-16)/(maxAbs*ppu));
-  data.forEach((x)=>{
-    const dv=Math.abs(x-guessC); if(dv<1e-9) return;
-    const side=dv*ppu*sqScale, px=pd2p(x);
-    pctx.fillStyle='rgba(228,87,46,.13)'; pctx.strokeStyle=C.live; pctx.lineWidth=.8;
-    pctx.fillRect(px-side/2, sy-side-4, side, side); pctx.strokeRect(px-side/2, sy-side-4, side, side);
-  });
-  // points
-  data.forEach(x=>{ pctx.beginPath(); pctx.arc(pd2p(x),sy,6,0,7); pctx.fillStyle=C.disk; pctx.fill();
-    pctx.lineWidth=2; pctx.strokeStyle=C.diskEdge; pctx.stroke(); });
-  // mean marker (teal)
-  pctx.strokeStyle=C.mean; pctx.lineWidth=1; pctx.setLineDash([3,3]); pctx.globalAlpha=.6;
-  pctx.beginPath(); pctx.moveTo(pd2p(m),sy-2); pctx.lineTo(pd2p(m),PH-26); pctx.stroke();
-  pctx.setLineDash([]); pctx.globalAlpha=1;
-  // guess line (live)
-  const gx=pd2p(guessC);
-  pctx.strokeStyle=C.live; pctx.lineWidth=2; pctx.setLineDash([6,4]);
-  pctx.beginPath(); pctx.moveTo(gx,12); pctx.lineTo(gx,PH-26); pctx.stroke(); pctx.setLineDash([]);
-  pctx.fillStyle=C.live; pctx.font='600 12px "IBM Plex Mono",monospace'; pctx.textAlign='center'; pctx.textBaseline='bottom';
-  pctx.fillText('guess c = '+fmt(guessC,2), gx, 12);
-
-  // ---- bottom: SS(c) parabola ----
-  const topY=sy+34, botY=PH-26, plotH=botY-topY;
-  let ssMax=0; const N=120, xs=[];
-  for(let i=0;i<=N;i++){ const c=dom.x0+(dom.x1-dom.x0)*i/N; const v=SS(c); xs.push(v); if(v>ssMax)ssMax=v; }
-  const y4ss = v => botY - (v/ssMax)*plotH;
-  // axis baseline
-  pctx.strokeStyle=C.line; pctx.lineWidth=1; pctx.beginPath(); pctx.moveTo(ML,botY); pctx.lineTo(PW-MR,botY); pctx.stroke();
-  // curve
-  pctx.strokeStyle=C.ink; pctx.lineWidth=2; pctx.beginPath();
-  for(let i=0;i<=N;i++){ const c=dom.x0+(dom.x1-dom.x0)*i/N, X=pd2p(c), Y=y4ss(xs[i]); i?pctx.lineTo(X,Y):pctx.moveTo(X,Y); }
-  pctx.stroke();
-  pctx.fillStyle=C.soft; pctx.font='11px "IBM Plex Mono",monospace'; pctx.textAlign='left'; pctx.textBaseline='top';
-  pctx.fillText('total squared distance  Σ(xᵢ − c)²', ML+2, topY-2);
-  // minimum at mean
-  const mX=pd2p(m), mY=y4ss(SS(m));
-  pctx.strokeStyle=C.mean; pctx.setLineDash([3,3]); pctx.globalAlpha=.6;
-  pctx.beginPath(); pctx.moveTo(mX,topY); pctx.lineTo(mX,botY); pctx.stroke(); pctx.setLineDash([]); pctx.globalAlpha=1;
-  pctx.beginPath(); pctx.arc(mX,mY,5,0,7); pctx.fillStyle=C.mean; pctx.fill();
-  pctx.fillStyle=C.mean; pctx.textAlign='center'; pctx.textBaseline='bottom';
-  pctx.fillText('min at x̄', mX, mY-8);
-  // current guess on curve
-  const gY=y4ss(SS(guessC));
-  pctx.beginPath(); pctx.arc(gx,gY,6,0,7); pctx.fillStyle=C.live; pctx.fill(); pctx.lineWidth=2; pctx.strokeStyle=C.diskEdge; pctx.stroke();
-
-  const atMin = Math.abs(guessC-m) < (dom.x1-dom.x0)*0.012;
-  document.getElementById('para-cap').innerHTML = atMin
-    ? '<b style="color:var(--mean)">Minimum!</b> total = '+fmt(SS(guessC),1)+' — the guess is sitting on the mean.'
-    : 'total squared distance = <b>'+fmt(SS(guessC),1)+'</b> &nbsp;(min possible: '+fmt(SS(m),1)+' at x̄ = '+fmt(m,2)+')';
+function updateSimCap(){ const bt=SIG2*(simN-1)/simN, pct=(100/simN);
+  const el=document.getElementById('simCap');
+  if(acc.J===0){ el.innerHTML=`Draw samples of size n=${simN} from a population with true σ²=1.00. Watch where each recipe’s average lands.`; return; }
+  el.innerHTML=`After <b>${acc.J.toLocaleString()}</b> samples: ÷(n−1) averages <b style="color:var(--sd)">${fmt(acc.sumN1/acc.J,3)}</b> (on σ²); ÷n averages <b style="color:var(--devNeg)">${fmt(acc.sumN/acc.J,3)}</b> (toward ${fmt(bt,3)}). The ÷n recipe is biased low by 1/n = <b>${fmt(pct,1)}%</b>.`;
 }
-function paraSet(clientX){ const r=pcv.getBoundingClientRect(); guessC=Math.min(dom.x1,Math.max(dom.x0,pp2d(clientX-r.left))); drawPara(); }
-pcv.addEventListener('pointerdown',e=>{ pdrag=true; pcv.setPointerCapture(e.pointerId); if(snapRAF)cancelAnimationFrame(snapRAF); paraSet(e.clientX); });
-pcv.addEventListener('pointermove',e=>{ if(pdrag) paraSet(e.clientX); });
-pcv.addEventListener('pointerup',()=>pdrag=false);
-pcv.addEventListener('pointercancel',()=>pdrag=false);
-document.getElementById('snapBtn').addEventListener('click',()=>{
-  const m=mean(data); if(reduced){ guessC=m; drawPara(); return; }
-  if(snapRAF)cancelAnimationFrame(snapRAF);
-  (function step(){ guessC+=(m-guessC)*0.2; drawPara();
-    if(Math.abs(guessC-m)>(dom.x1-dom.x0)*0.002) snapRAF=requestAnimationFrame(step); else { guessC=m; drawPara(); } })();
-});
+function runMany(total){ if(busy)return; busy=true; let done=0;
+  (function chunk(){ const end=Math.min(done+200,total); for(;done<end;done++) oneSample(); drawSim(); updateSimCap();
+    if(done<total && !reduced) requestAnimationFrame(chunk); else { if(done<total){ for(;done<total;done++) oneSample(); drawSim(); updateSimCap(); } busy=false; } })(); }
 
-/* ---------------- controls ---------------- */
-const PRESETS = {
-  figure: { data:[2,4.5,6,7.5,10], div:'sample' },
-  class:  { data:[70,70,70,100,100,100], div:'pop' },
-};
-function loadPreset(name){
-  if(name==='random'){ const n=5+Math.floor(Math.random()*3); data=Array.from({length:n},()=>+(1+Math.random()*11).toFixed(1)); divisor='sample'; }
-  else { data=PRESETS[name].data.slice(); divisor=PRESETS[name].div; }
-  syncDivSeg(); fitDomain(); guessC=null; animMean=null; drawPara(); requestDraw();
-  if(name==='class') document.getElementById('caption').innerHTML='Two score groups: <b>70</b> and <b>100</b>. Mean = <b>85</b> — but nobody scored 85. Every point is exactly 15 away, so SD = 15 (dividing by n).';
-}
-function syncDivSeg(){ document.querySelectorAll('#divSeg button').forEach(b=>b.classList.toggle('on', b.dataset.div===divisor)); }
-
-document.querySelectorAll('.chip[data-layer]').forEach(b=>b.addEventListener('click',()=>{
-  const k=b.dataset.layer==='dev'?'dev':b.dataset.layer==='sq'?'sq':'sd';
-  layers[k]=!layers[k]; b.classList.toggle('on',layers[k]); requestDraw();
-}));
+/* ---------------- presets / controls ---------------- */
+function loadPreset(name){ if(name==='random'){ const n=5+Math.floor(Math.random()*3); data=Array.from({length:n},()=>+(1+Math.random()*11).toFixed(1)); }
+  else if(name==='class') data=[70,70,70,100,100,100]; else data=[2,4.5,6,7.5,10];
+  fitDomain(); animMean=null; refreshAll(); reqStage(); }
 document.querySelectorAll('.chip[data-preset]').forEach(b=>b.addEventListener('click',()=>loadPreset(b.dataset.preset)));
-document.querySelectorAll('#divSeg button').forEach(b=>b.addEventListener('click',()=>{ divisor=b.dataset.div; syncDivSeg(); requestDraw(); }));
+document.getElementById('devChip').addEventListener('click',function(){ showDev=!showDev; this.classList.toggle('on',showDev); drawStage(); });
+document.querySelectorAll('.step-btn').forEach(b=>b.addEventListener('click',()=>setStep(+b.dataset.step)));
+document.querySelectorAll('.chip[data-pop]').forEach(b=>b.addEventListener('click',()=>{ popKind=b.dataset.pop;
+  document.querySelectorAll('.chip[data-pop]').forEach(x=>x.classList.toggle('on',x===b)); simResetAll(); }));
+document.getElementById('nSlider').addEventListener('input',function(){ simN=+this.value; document.getElementById('nlbl').textContent=simN; simResetAll(); });
+document.getElementById('draw1').addEventListener('click',()=>{ oneSample(); drawSim(); updateSimCap(); });
+document.getElementById('draw1000').addEventListener('click',()=>runMany(1000));
+document.getElementById('simReset').addEventListener('click',simResetAll);
 
 /* ---------------- theme ---------------- */
 function applyTheme(){ document.documentElement.setAttribute('data-theme',theme); C=PAL[theme];
-  document.getElementById('themeToggle').textContent = theme==='dark'?'☀':'◐';
-  drawPara(); requestDraw(); if(plot3dLoaded) render3d(); }
+  document.getElementById('themeToggle').textContent=theme==='dark'?'☀':'◐'; drawStage(); drawDiss(); drawSD(); drawSim(); }
 document.getElementById('themeToggle').addEventListener('click',()=>{ theme=theme==='dark'?'light':'dark'; applyTheme(); });
 
-/* ---------------- 3D bonus (lazy Plotly) ---------------- */
-const PTS3 = [{x:1,y:2},{x:2,y:5},{x:4,y:3},{x:5,y:6},{x:3,y:1.5},{x:6,y:4.5}];
-let plot3dLoaded=false;
-function load3d(){
-  const ph=document.getElementById('threed-ph'); ph.innerHTML='<div>loading Plotly…</div>';
-  const s=document.createElement('script');
-  s.src='https://cdn.jsdelivr.net/npm/plotly.js-dist@2.26.0/plotly.min.js';
-  s.onload=()=>{ document.getElementById('threed-mount').innerHTML='<div id="plot3d"></div>'; plot3dLoaded=true; render3d(); };
-  s.onerror=()=>{ ph.innerHTML='<div>Could not load Plotly (offline?). The 2-D parabola above tells the same story.</div>'; };
-  document.head.appendChild(s);
+/* ---------------- KaTeX render + init ---------------- */
+function renderMath(){
+  try{
+    document.querySelectorAll('[data-tex]').forEach(el=>{
+      katex.render(el.getAttribute('data-tex'), el, {throwOnError:false, trust:true, strict:'ignore', displayMode:false});
+    });
+  }catch(e){ /* fallback: leave text */ }
 }
-function render3d(){
-  if(!window.Plotly) return;
-  const cxs=mean(PTS3.map(p=>p.x)), cys=mean(PTS3.map(p=>p.y));
-  const A=[],B=[]; const a0=0,a1=7,b0=0,b1=7,STEP=0.25;
-  for(let a=a0;a<=a1+1e-9;a+=STEP) A.push(+a.toFixed(2));
-  for(let b=b0;b<=b1+1e-9;b+=STEP) B.push(+b.toFixed(2));
-  const Z=B.map(b=>A.map(a=>{ let s=0; for(const p of PTS3) s+=(p.x-a)**2+(p.y-b)**2; return s; }));
-  let zmin=1e9; for(const p of PTS3) {} // centroid SS:
-  let ssMin=0; for(const p of PTS3) ssMin+=(p.x-cxs)**2+(p.y-cys)**2;
-  const dark=theme==='dark';
-  const surface={ type:'surface', x:A, y:B, z:Z, showscale:false, opacity:.92,
-    colorscale:[[0,dark?'#2E2A20':'#FBF1D6'],[.5,'#E0B24A'],[1,'#7A4FB0']],
-    contours:{z:{show:true,usecolormap:true,project:{z:true}}} };
-  const minPt={ type:'scatter3d', mode:'markers+text', x:[cxs], y:[cys], z:[ssMin],
-    marker:{size:5,color:dark?'#5BBBB1':'#2E6F6A'}, text:['centroid (x̄, ȳ) = minimum'], textposition:'top center',
-    textfont:{color:dark?'#5BBBB1':'#2E6F6A',size:12} };
-  const ink=dark?'#A39C8E':'#6A6560', grid=dark?'#322E25':'#E7DFD2', pap=dark?'#1E1C17':'#FFFFFF';
-  Plotly.react('plot3d',[surface,minPt],{
-    margin:{l:0,r:0,t:6,b:0}, paper_bgcolor:pap, showlegend:false,
-    scene:{ bgcolor:pap,
-      xaxis:{title:'centre a',color:ink,gridcolor:grid}, yaxis:{title:'centre b',color:ink,gridcolor:grid},
-      zaxis:{title:'Σ squared distance',color:ink,gridcolor:grid}, camera:{eye:{x:1.6,y:-1.7,z:1.0}} }
-  },{responsive:true,displayModeBar:false});
-  document.getElementById('cap3d').innerHTML='The bowl bottoms out at the <b style="color:var(--mean)">centroid (x̄, ȳ)</b> = ('+fmt(cxs,2)+', '+fmt(cys,2)+') — the 2-D mean is the least-squares centre, just like in Act 4. Drag to rotate.';
-}
-document.getElementById('load3d').addEventListener('click',load3d);
-
-/* ---------------- init ---------------- */
 function init(){
   document.documentElement.setAttribute('data-theme',theme);
-  document.getElementById('themeToggle').textContent = theme==='dark'?'☀':'◐';
-  fitDomain(); resizeStage(); resizePara();
-  let to; addEventListener('resize',()=>{ clearTimeout(to); to=setTimeout(()=>{ resizeStage(); resizePara(); },120); });
+  document.getElementById('themeToggle').textContent=theme==='dark'?'☀':'◐';
+  if(window.katex) renderMath(); else window.addEventListener('load',renderMath);
+  fitDomain(); resizeStage(); resizeDiss(); resizeSD(); resizeSim();
+  refreshAll(); setStep(1); drawSim(); updateSimCap();
+  let to; addEventListener('resize',()=>{ clearTimeout(to); to=setTimeout(()=>{ resizeStage(); resizeDiss(); resizeSD(); resizeSim(); refreshAll(); drawSim(); },120); });
 }
-init();
+if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',init); else init();
 </script>
 </body>
 </html>
