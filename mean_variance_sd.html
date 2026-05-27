@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Mean, Variance &amp; Standard Deviation — definitions, formulas, and what they mean</title>
+<title>Mean, Variance &amp; Standard Deviation — a visual introduction from scratch</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -13,66 +13,53 @@
     --paper:#FBF7F0; --stage:#FFFFFF; --ink:#1C1B1A; --soft:#6A6560; --faint:#9A938A;
     --line:#E7DFD2; --line2:#EFE9DE;
     --mean:#2E6F6A; --devNeg:#3B6FB0; --devPos:#C25A3C; --variance:#B07F12; --sd:#7A4FB0; --live:#E4572E; --good:#2E8B57;
-    --mean-bg:#E2EEED; --var-bg:#F6ECD2; --sd-bg:#EDE5F5;
-    --hl:#FBEFC9;
+    --mean-bg:#E2EEED; --var-bg:#F6ECD2; --sd-bg:#EDE5F5; --hl:#FBEFC9;
     --shadow:0 1px 2px rgba(40,30,15,.05), 0 14px 34px -16px rgba(40,30,15,.18);
   }
   [data-theme="dark"]{
     --paper:#15140F; --stage:#1E1C17; --ink:#EDE7DB; --soft:#A39C8E; --faint:#6E675B;
     --line:#322E25; --line2:#262219;
     --mean:#5BBBB1; --devNeg:#6BA3E0; --devPos:#E0876A; --variance:#E0B24A; --sd:#B596E6; --live:#FF7A52; --good:#5FC98C;
-    --mean-bg:#13302D; --var-bg:#332912; --sd-bg:#241A33;
-    --hl:#4A3D17;
+    --mean-bg:#13302D; --var-bg:#332912; --sd-bg:#241A33; --hl:#4A3D17;
     --shadow:0 1px 2px rgba(0,0,0,.4), 0 16px 38px -18px rgba(0,0,0,.7);
   }
   *{box-sizing:border-box; margin:0; padding:0;}
   body{ background:var(--paper); color:var(--ink);
     font-family:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,"Times New Roman",serif;
-    font-size:18px; line-height:1.7; -webkit-font-smoothing:antialiased; transition:background .3s,color .3s; }
-  .wrap{ max-width:980px; margin:0 auto; padding:0 26px 80px; }
-  .prose{ max-width:720px; }
+    font-size:18px; line-height:1.72; -webkit-font-smoothing:antialiased; transition:background .3s,color .3s; }
+  .wrap{ max-width:880px; margin:0 auto; padding:0 26px 90px; }
   .mono,.num{ font-family:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace; font-variant-numeric:tabular-nums; }
   h1,h2,h3,.disp{ font-family:"Fraunces",Georgia,serif; font-weight:600; letter-spacing:-.01em; line-height:1.15; }
-  .katex{ font-size:1.08em; }
+  .katex{ font-size:1.06em; }
+  em{ font-style:italic; }
 
-  .masthead{ padding:52px 0 22px; position:relative; }
+  .masthead{ padding:58px 0 8px; position:relative; }
   .eyebrow{ font-family:"IBM Plex Mono",monospace; font-size:12px; letter-spacing:.13em; text-transform:uppercase; color:var(--mean); margin-bottom:12px; }
-  h1{ font-size:clamp(28px,4.6vw,46px); margin-bottom:14px; }
-  .dek{ font-size:clamp(16px,2vw,19px); color:var(--soft); max-width:680px; }
-  .theme-toggle{ position:absolute; top:24px; right:0; width:40px; height:40px; border-radius:10px;
+  h1{ font-size:clamp(30px,5vw,50px); margin-bottom:16px; }
+  .dek{ font-size:clamp(17px,2.1vw,21px); color:var(--soft); max-width:660px; line-height:1.55; }
+  .theme-toggle{ position:absolute; top:26px; right:0; width:40px; height:40px; border-radius:10px;
     border:1px solid var(--line); background:var(--stage); color:var(--ink); cursor:pointer; font-size:17px; }
   .theme-toggle:hover{ border-color:var(--mean); }
 
-  /* section scaffolding */
-  .sec-head{ margin:60px 0 14px; }
-  .sec-head .eyebrow{ margin-bottom:8px; }
-  h2{ font-size:clamp(22px,3vw,30px); }
-  .lead{ color:var(--soft); font-size:16.5px; margin:6px 0 0; max-width:720px; }
-  p.body{ margin:14px 0; max-width:720px; }
-  p.body b{ font-weight:600; }
+  /* story step */
+  .step{ margin-top:64px; }
+  .step .kicker{ font-family:"IBM Plex Mono",monospace; font-size:12px; letter-spacing:.1em; text-transform:uppercase; color:var(--faint); margin-bottom:6px; }
+  .step .kicker b{ color:var(--mean); font-weight:500; }
+  h2{ font-size:clamp(23px,3.3vw,33px); margin-bottom:10px; }
+  p.body{ margin:14px 0; font-size:18px; }
+  p.body b{ font-weight:600; } p.lead-q{ font-size:20px; color:var(--ink); }
+  .big-q{ font-family:"Fraunces",serif; font-style:italic; color:var(--mean); font-size:clamp(20px,2.6vw,26px); margin:18px 0; }
 
-  .card{ background:var(--stage); border:1px solid var(--line); border-radius:14px; box-shadow:var(--shadow); padding:22px; margin-top:18px; }
+  .card{ background:var(--stage); border:1px solid var(--line); border-radius:14px; box-shadow:var(--shadow); padding:22px; margin:18px 0; }
   .formula-band{ background:var(--stage); border:1px solid var(--line); border-left:4px solid var(--mean); border-radius:0 12px 12px 0;
-    padding:14px 20px; margin:16px 0; overflow-x:auto; }
+    padding:14px 20px; margin:18px 0; overflow-x:auto; font-size:16.5px; }
   .formula-band.var{ border-left-color:var(--variance); } .formula-band.sd{ border-left-color:var(--sd); }
-  .def{ font-size:16.5px; } .def b{ font-weight:600; }
+  .formula-band b{ font-weight:600; }
 
-  /* comparison table */
-  .cmp-wrap{ overflow-x:auto; }
-  table.cmp{ width:100%; border-collapse:collapse; min-width:560px; }
-  table.cmp th, table.cmp td{ text-align:left; padding:13px 14px; border-bottom:1px solid var(--line); vertical-align:top; }
-  table.cmp thead th{ font-family:"Fraunces",serif; font-size:18px; font-weight:600; border-bottom:2px solid var(--line); }
-  table.cmp thead th .glyph{ font-size:13px; font-family:"IBM Plex Mono",monospace; display:block; margin-top:2px; font-weight:400; }
-  table.cmp tbody th{ font-family:"IBM Plex Mono",monospace; font-size:11px; letter-spacing:.05em; text-transform:uppercase; color:var(--faint); font-weight:500; width:120px; }
-  table.cmp td{ font-size:15px; color:var(--ink); }
-  table.cmp .c-mean{ color:var(--mean); } table.cmp .c-var{ color:var(--variance); } table.cmp .c-sd{ color:var(--sd); }
-  .liveval{ font-family:"IBM Plex Mono",monospace; font-weight:500; }
-
-  /* canvases */
   .canvas-box{ position:relative; width:100%; }
   .canvas-box canvas{ width:100%; height:100%; display:block; touch-action:none; }
-  .h-stage{ height:300px; } .h-diss{ height:330px; } .h-sd{ height:250px; } .h-sim{ height:340px; }
-  .stage-grid{ display:grid; grid-template-columns:1fr 240px; gap:18px; align-items:start; }
+  .h-stage{height:290px;} .h-motiv{height:210px;} .h-diss{height:330px;} .h-sd{height:240px;} .h-sim{height:330px;}
+  .stage-grid{ display:grid; grid-template-columns:1fr 220px; gap:18px; align-items:start; }
   @media(max-width:740px){ .stage-grid{ grid-template-columns:1fr; } }
   .readout{ display:flex; flex-direction:column; gap:10px; }
   .stat{ border:1px solid var(--line); border-radius:11px; padding:10px 13px; }
@@ -86,45 +73,42 @@
   .chips{ display:flex; gap:7px; flex-wrap:wrap; align-items:center; margin-bottom:12px; }
   .chips .lbl{ font-family:"IBM Plex Mono",monospace; font-size:10.5px; letter-spacing:.06em; text-transform:uppercase; color:var(--faint); }
   .chip{ font-family:"IBM Plex Mono",monospace; font-size:12.5px; border:1px solid var(--line); background:var(--paper); color:var(--soft); padding:6px 12px; border-radius:999px; cursor:pointer; transition:.15s; }
-  .chip:hover{ border-color:var(--mean); color:var(--ink); }
-  .chip.on{ background:var(--ink); color:var(--paper); border-color:var(--ink); }
+  .chip:hover{ border-color:var(--mean); color:var(--ink); } .chip.on{ background:var(--ink); color:var(--paper); border-color:var(--ink); }
   .btn{ font-family:"IBM Plex Mono",monospace; font-size:13px; border:1px solid var(--line); background:var(--paper); color:var(--ink); padding:8px 15px; border-radius:9px; cursor:pointer; transition:.15s; }
-  .btn:hover{ border-color:var(--mean); }
-  .btn.primary{ background:var(--mean); color:#fff; border-color:var(--mean); }
-  .btn.gold{ background:var(--variance); color:#fff; border-color:var(--variance); }
+  .btn:hover{ border-color:var(--mean); } .btn.primary{ background:var(--mean); color:#fff; border-color:var(--mean); } .btn.gold{ background:var(--variance); color:#fff; border-color:var(--variance); }
 
-  /* dissection */
   .diss-formula{ text-align:center; margin:6px 0 16px; font-size:1.25em; }
   .kt-hl{ background:var(--hl); border-radius:5px; padding:1px 3px; }
   .kt-dev{ color:var(--devPos); } .kt-sq{ color:var(--variance); } .kt-sum{ color:var(--variance); } .kt-div{ color:var(--soft); }
   .step-row{ display:flex; gap:8px; flex-wrap:wrap; justify-content:center; margin-bottom:14px; }
   .step-btn{ font-family:"IBM Plex Mono",monospace; font-size:12.5px; border:1px solid var(--line); background:var(--paper); color:var(--soft); padding:7px 13px; border-radius:9px; cursor:pointer; transition:.15s; }
   .step-btn.on{ background:var(--variance); color:#fff; border-color:var(--variance); }
-  .diss-cap{ text-align:center; color:var(--soft); font-size:15px; margin-top:12px; min-height:46px; }
-  .diss-cap b{ color:var(--ink); }
+  .diss-cap{ text-align:center; color:var(--soft); font-size:15px; margin-top:12px; min-height:46px; } .diss-cap b{ color:var(--ink); }
 
-  /* sim */
-  .sim-grid{ display:grid; grid-template-columns:1fr 240px; gap:18px; align-items:start; }
-  @media(max-width:740px){ .sim-grid{ grid-template-columns:1fr; } }
+  .sim-grid{ display:grid; grid-template-columns:1fr 230px; gap:18px; align-items:start; } @media(max-width:740px){ .sim-grid{ grid-template-columns:1fr; } }
   .ctl-row{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:10px; font-family:"IBM Plex Mono",monospace; font-size:12.5px; color:var(--soft); }
   .ctl-row input[type=range]{ accent-color:var(--mean); cursor:pointer; }
   .legend{ display:flex; flex-direction:column; gap:7px; font-family:"IBM Plex Mono",monospace; font-size:12px; }
-  .legend .li{ display:flex; align-items:center; gap:8px; }
-  .legend .sw{ width:18px; height:3px; border-radius:2px; flex:none; } .legend .sw.dash{ background:none; border-top:2px dashed; }
+  .legend .li{ display:flex; align-items:center; gap:8px; } .legend .sw{ width:18px; height:3px; border-radius:2px; flex:none; } .legend .sw.dash{ background:none; border-top:2px dashed; }
   .sim-cap{ color:var(--soft); font-size:14.5px; margin-top:12px; line-height:1.6; } .sim-cap b{ color:var(--ink); }
 
-  /* two-panel sample/pop */
-  .twopanel{ display:grid; grid-template-columns:1fr 1fr; gap:14px; }
-  @media(max-width:640px){ .twopanel{ grid-template-columns:1fr; } }
+  .cmp-wrap{ overflow-x:auto; }
+  table.cmp{ width:100%; border-collapse:collapse; min-width:560px; }
+  table.cmp th, table.cmp td{ text-align:left; padding:13px 14px; border-bottom:1px solid var(--line); vertical-align:top; }
+  table.cmp thead th{ font-family:"Fraunces",serif; font-size:18px; font-weight:600; border-bottom:2px solid var(--line); }
+  table.cmp thead th .glyph{ font-size:12.5px; font-family:"IBM Plex Mono",monospace; display:block; margin-top:2px; font-weight:400; color:var(--faint); }
+  table.cmp tbody th{ font-family:"IBM Plex Mono",monospace; font-size:11px; letter-spacing:.05em; text-transform:uppercase; color:var(--faint); font-weight:500; width:118px; }
+  table.cmp td{ font-size:15px; } table.cmp .c-mean{color:var(--mean);} table.cmp .c-var{color:var(--variance);} table.cmp .c-sd{color:var(--sd);}
+  .liveval{ font-family:"IBM Plex Mono",monospace; font-weight:500; }
+
+  .twopanel{ display:grid; grid-template-columns:1fr 1fr; gap:14px; } @media(max-width:640px){ .twopanel{ grid-template-columns:1fr; } }
   .panel{ border:1px solid var(--line); border-radius:12px; padding:16px 18px; background:var(--stage); }
-  .panel h3{ font-size:16px; margin-bottom:4px; } .panel .tag{ font-family:"IBM Plex Mono",monospace; font-size:10.5px; letter-spacing:.05em; text-transform:uppercase; color:var(--faint); }
+  .panel h3{ font-size:16px; margin-bottom:2px; } .panel .tag{ font-family:"IBM Plex Mono",monospace; font-size:10.5px; letter-spacing:.05em; text-transform:uppercase; color:var(--faint); }
   .panel .row{ margin:10px 0; } .panel .row .nm{ font-size:13px; color:var(--soft); }
 
-  .note{ border-left:3px solid var(--devPos); background:var(--paper); border-radius:0 10px 10px 0; padding:12px 16px; margin:16px 0; font-size:15px; line-height:1.65; }
-  .note.teal{ border-left-color:var(--mean); } .note.violet{ border-left-color:var(--sd); } .note.gold{ border-left-color:var(--variance); }
-  .note b{ font-weight:600; }
-  footer{ text-align:center; color:var(--faint); font-size:13px; margin-top:56px; font-family:"IBM Plex Mono",monospace; }
-  footer a{ color:var(--mean); text-decoration:none; }
+  .note{ border-left:3px solid var(--devPos); background:var(--paper); border-radius:0 10px 10px 0; padding:12px 16px; margin:16px 0; font-size:15.5px; line-height:1.65; }
+  .note.teal{ border-left-color:var(--mean); } .note.violet{ border-left-color:var(--sd); } .note.gold{ border-left-color:var(--variance); } .note b{ font-weight:600; }
+  footer{ text-align:center; color:var(--faint); font-size:13px; margin-top:60px; font-family:"IBM Plex Mono",monospace; } footer a{ color:var(--mean); text-decoration:none; }
   @media (prefers-reduced-motion: reduce){ *{transition:none !important;} }
 </style>
 </head>
@@ -133,157 +117,168 @@
 
   <header class="masthead">
     <button class="theme-toggle" id="themeToggle" aria-label="Toggle dark mode">◐</button>
-    <div class="eyebrow">descriptive statistics</div>
+    <div class="eyebrow">a visual introduction · start here</div>
     <h1>Mean, variance &amp; standard deviation</h1>
-    <p class="dek">Three numbers describe any dataset: where it <b>centers</b> (the mean) and how far it <b>spreads</b> (variance, then standard deviation). We start with the definitions and formulas, then show a picture of what each formula actually computes.</p>
+    <p class="dek">Five students take a test. Can we capture the whole class in just a number or two? Follow that one question and you’ll build the three most important summaries in statistics — no background needed.</p>
   </header>
 
-  <!-- ===================== 1. AT A GLANCE ===================== -->
-  <div class="sec-head"><div class="eyebrow">at a glance</div><h2>The three measures, side by side</h2>
-    <p class="lead">Read <b>down</b> a column to understand one measure; read <b>across</b> a row to compare them. Live values update from the dataset in the next section.</p></div>
-  <div class="card cmp-wrap">
-    <table class="cmp">
-      <thead><tr>
-        <th></th>
-        <th class="c-mean">Mean<span class="glyph">x̄ · center</span></th>
-        <th class="c-var">Variance<span class="glyph">s² · spread (area)</span></th>
-        <th class="c-sd">Std deviation<span class="glyph">s · spread (length)</span></th>
-      </tr></thead>
-      <tbody>
-        <tr><th>In words</th>
-          <td>the balance point — the center of the data</td>
-          <td>the <b>average squared distance</b> from the mean</td>
-          <td>the <b>typical distance</b> from the mean</td></tr>
-        <tr><th>Formula</th>
-          <td><span data-tex="\bar{x}=\frac{1}{n}\sum x_i"></span></td>
-          <td><span data-tex="s^2=\frac{1}{n-1}\sum (x_i-\bar{x})^2"></span></td>
-          <td><span data-tex="s=\sqrt{s^2}"></span></td></tr>
-        <tr><th>Answers</th>
-          <td>“where is the middle?”</td>
-          <td>“how spread out — in area?”</td>
-          <td>“how spread out — in data units?”</td></tr>
-        <tr><th>Units</th>
-          <td>same as data</td>
-          <td><b>squared</b> units (e.g. points²)</td>
-          <td>same as data (e.g. points)</td></tr>
-        <tr><th>On this data</th>
-          <td class="c-mean liveval" id="tv-mean">—</td>
-          <td class="c-var liveval" id="tv-var">—</td>
-          <td class="c-sd liveval" id="tv-sd">—</td></tr>
-      </tbody>
-    </table>
-  </div>
-  <div class="note gold">Notice the <b>Units</b> row — that single comparison is why standard deviation exists. Variance is in <i>squared</i> units (hard to feel), so we take its square root to get a spread back in the data’s own units.</div>
-
-  <!-- ===================== 2. MEAN ===================== -->
-  <div class="sec-head"><div class="eyebrow">measure 1 · center</div><h2>Mean — the balance point</h2>
-    <p class="lead">The mean adds up every value and divides by how many there are. Geometrically, it’s the point where the data balances: the pull from the low side equals the pull from the high side.</p></div>
-  <div class="formula-band">
-    <div class="def"><b>Definition.</b> Sample mean <span data-tex="\bar{x}=\frac{1}{n}\sum_{i=1}^{n} x_i"></span> &nbsp;·&nbsp; population mean <span data-tex="\mu=\frac{1}{N}\sum x_i"></span> &nbsp;·&nbsp; and the expected value <span data-tex="E[X]=\mu"></span>.</div>
-  </div>
-  <div class="card">
-    <div class="chips"><span class="lbl">dataset</span>
-      <button class="chip" data-preset="figure">5 points</button>
-      <button class="chip" data-preset="class">70 / 100 class</button>
-      <button class="chip" data-preset="random">random</button>
-      <span class="lbl" style="margin-left:8px">show</span>
-      <button class="chip" id="devChip">deviations</button>
+  <!-- ===================== STEP 1 · THE DATA + MEAN ===================== -->
+  <section class="step">
+    <div class="kicker">Step 1 · <b>where is the center?</b></div>
+    <h2>Meet the data, and find its middle</h2>
+    <p class="body">Here are five scores on a number line. Each dot is one student. <b>Drag them around</b> if you like — this same little dataset follows us through the whole page.</p>
+    <p class="big-q">First question: what’s a single “typical” score?</p>
+    <p class="body">The natural answer is the <b>mean</b> (the average): add every value, divide by how many there are. Picture it as a see-saw — the mean is the <b>balance point</b>, the spot where the dots on the left pull exactly as hard as the dots on the right.</p>
+    <div class="formula-band">
+      <b>The mean.</b> <span data-tex="\bar{x}=\frac{1}{n}\sum_{i=1}^{n} x_i"></span> &nbsp;—&nbsp; “add up all <span data-tex="n"></span> values, divide by <span data-tex="n"></span>.”
     </div>
-    <div class="stage-grid">
-      <div class="canvas-box h-stage"><canvas id="stage"></canvas></div>
-      <div class="readout">
-        <div class="stat mean"><div class="k">mean x̄</div><div class="v" id="r-mean">—</div></div>
-        <div class="stat var"><div class="k">variance s²</div><div class="v" id="r-var">—</div></div>
-        <div class="stat sd"><div class="k">std dev s</div><div class="v" id="r-sd">—</div></div>
-        <div class="hintbar" id="balance"></div>
+    <div class="card">
+      <div class="chips"><span class="lbl">dataset</span>
+        <button class="chip" data-preset="figure">5 scores</button>
+        <button class="chip" data-preset="class">70 / 100 class</button>
+        <button class="chip" data-preset="random">random</button>
       </div>
-    </div>
-    <div class="hintbar">↔ drag any point — the fulcrum (mean) and every plot below follow.</div>
-  </div>
-  <div class="note teal">Try the <b>70 / 100 class</b>: the mean is <b>85</b>, yet <b>nobody scored 85</b>. The mean is a balance point, not “what a typical student got.”</div>
-
-  <!-- ===================== 3. VARIANCE (DISSECTION) ===================== -->
-  <div class="sec-head"><div class="eyebrow">measure 2 · spread</div><h2>Variance — built one piece at a time</h2>
-    <p class="lead">Variance measures spread as the average squared distance from the mean. The formula looks dense, so let’s light up one piece at a time and watch what each does to the picture.</p></div>
-  <div class="formula-band var">
-    <div class="def"><b>Definition.</b> Sample variance <span data-tex="s^2=\frac{1}{n-1}\sum_{i=1}^{n}(x_i-\bar{x})^2"></span> &nbsp;·&nbsp; population variance <span data-tex="\sigma^2=\frac{1}{N}\sum (x_i-\mu)^2=E[(X-\mu)^2]"></span>.</div>
-  </div>
-  <div class="card">
-    <div class="diss-formula" id="dissFormula" data-tex="s^2=\htmlClass{kt-div}{\frac{1}{n-1}}\htmlClass{kt-sum}{\sum_{i=1}^{n}}\htmlClass{kt-sq}{\Bigl(\htmlClass{kt-dev}{x_i-\bar{x}}\Bigr)^{2}}"></div>
-    <div class="step-row" id="stepRow">
-      <button class="step-btn" data-step="1">1 · deviation</button>
-      <button class="step-btn" data-step="2">2 · square it</button>
-      <button class="step-btn" data-step="3">3 · sum</button>
-      <button class="step-btn" data-step="4">4 · ÷ (n−1)</button>
-    </div>
-    <div class="canvas-box h-diss"><canvas id="diss"></canvas></div>
-    <div class="diss-cap" id="dissCap"></div>
-  </div>
-  <div class="note">Why <b>square</b> the distances? Two reasons you can see above: signed deviations cancel to zero (so raw distances can’t measure spread), and squaring <b>punishes far points</b> — twice as far makes a square <b>four times</b> bigger.</div>
-
-  <!-- ===================== 4. WHY n-1 ===================== -->
-  <div class="sec-head"><div class="eyebrow">measure 2 · the fine print</div><h2>Why divide by n − 1, not n?</h2>
-    <p class="lead">Step 4 divided by n − 1, not n. Here’s the reason, made visible. We sample many times from a population whose <i>true</i> variance we know, and compare the two recipes.</p></div>
-  <div class="card">
-    <div class="ctl-row">
-      <span>population:</span>
-      <button class="chip on" data-pop="normal">Normal</button>
-      <button class="chip" data-pop="uniform">Uniform</button>
-      <button class="chip" data-pop="skew">Skewed</button>
-      <span style="margin-left:10px">sample size n = <b id="nlbl" class="num">5</b></span>
-      <input type="range" id="nSlider" min="2" max="30" value="5" style="width:120px">
-    </div>
-    <div class="ctl-row">
-      <button class="btn primary" id="draw1">draw 1 sample</button>
-      <button class="btn gold" id="draw1000">draw 1000</button>
-      <button class="btn" id="simReset">reset</button>
-    </div>
-    <div class="sim-grid">
-      <div class="canvas-box h-sim"><canvas id="sim"></canvas></div>
-      <div>
-        <div class="legend">
-          <div class="li"><span class="sw" style="background:var(--mean)"></span> true σ² = 1.00</div>
-          <div class="li"><span class="sw" style="background:var(--sd)"></span> ÷ (n−1) average → lands on σ²</div>
-          <div class="li"><span class="sw" style="background:var(--devNeg)"></span> ÷ n average → falls short</div>
-          <div class="li"><span class="sw dash" style="border-color:var(--devNeg)"></span> where ÷ n lands: σ²·(n−1)/n</div>
+      <div class="stage-grid">
+        <div class="canvas-box h-stage"><canvas id="stage"></canvas></div>
+        <div class="readout">
+          <div class="stat mean"><div class="k">mean x̄</div><div class="v" id="r-mean">—</div></div>
+          <div class="stat var"><div class="k">variance s² · later</div><div class="v" id="r-var">—</div></div>
+          <div class="stat sd"><div class="k">std dev s · later</div><div class="v" id="r-sd">—</div></div>
+          <div class="hintbar" id="balance"></div>
         </div>
-        <div class="sim-cap" id="simCap"></div>
+      </div>
+      <div class="hintbar">↔ drag a dot — the teal fulcrum (the mean) slides to keep its balance.</div>
+    </div>
+    <div class="note teal">Try the <b>70 / 100 class</b>: the mean is <b>85</b>, but <b>nobody actually scored 85</b>. The mean is a balance point — not “what a typical student got,” and not necessarily a real value at all.</div>
+  </section>
+
+  <!-- ===================== STEP 2 · WHY ONE NUMBER ISN'T ENOUGH ===================== -->
+  <section class="step">
+    <div class="kicker">Step 2 · <b>one number hides too much</b></div>
+    <h2>The mean can’t tell these classes apart</h2>
+    <p class="body">Here’s the catch. Both classes below have the <b>exact same mean of 85</b> — yet they’re nothing alike. Class A is bunched tightly together; Class B is split to the extremes. The mean alone is blind to the difference.</p>
+    <div class="card"><div class="canvas-box h-motiv"><canvas id="motiv"></canvas></div></div>
+    <p class="big-q">Second question: how <em>spread out</em> are the values?</p>
+    <p class="body">We need a second number that measures spread. That number is the <b>variance</b> — and building it up is the heart of this page.</p>
+  </section>
+
+  <!-- ===================== STEP 3 · VARIANCE (DISSECTION) ===================== -->
+  <section class="step">
+    <div class="kicker">Step 3 · <b>measuring the spread</b></div>
+    <h2>Variance, built one piece at a time</h2>
+    <p class="body">How do we turn “spread” into a number? Start with the obvious idea: <b>how far is each point from the mean?</b> Then handle a snag, and you’ve got the variance. Click through the four steps and watch each part of the formula light up the picture.</p>
+    <div class="formula-band var">
+      <b>The variance.</b> <span data-tex="s^2=\frac{1}{n-1}\sum_{i=1}^{n}(x_i-\bar{x})^2"></span> &nbsp;—&nbsp; “the average of the squared distances from the mean.”
+    </div>
+    <div class="card">
+      <div class="diss-formula" id="dissFormula" data-tex="s^2=\htmlClass{kt-div}{\frac{1}{n-1}}\htmlClass{kt-sum}{\sum_{i=1}^{n}}\htmlClass{kt-sq}{\Bigl(\htmlClass{kt-dev}{x_i-\bar{x}}\Bigr)^{2}}"></div>
+      <div class="step-row" id="stepRow">
+        <button class="step-btn" data-step="1">1 · distance</button>
+        <button class="step-btn" data-step="2">2 · square it</button>
+        <button class="step-btn" data-step="3">3 · add up</button>
+        <button class="step-btn" data-step="4">4 · average</button>
+      </div>
+      <div class="canvas-box h-diss"><canvas id="diss"></canvas></div>
+      <div class="diss-cap" id="dissCap"></div>
+    </div>
+    <div class="note">Why <b>square</b> the distances? Step 1 shows the snag: the raw distances, with their + and − signs, always cancel to <b>zero</b>. Squaring fixes that (everything turns positive) <em>and</em> it makes far-away points count for much more — twice as far becomes <b>four times</b> the area.</div>
+  </section>
+
+  <!-- ===================== STEP 4 · WHY n-1 ===================== -->
+  <section class="step">
+    <div class="kicker">Step 4 · <b>a wrinkle worth understanding</b></div>
+    <h2>Wait — why divide by n − 1?</h2>
+    <p class="body">You may have noticed step 4 divided by <b>n − 1</b>, not <b>n</b>. That looks like a typo, but it’s deliberate, and here’s the reason you can actually watch. We’ll sample over and over from a population whose <em>true</em> variance we know to be 1, and compare the two recipes.</p>
+    <div class="card">
+      <div class="ctl-row"><span>population:</span>
+        <button class="chip on" data-pop="normal">Normal</button>
+        <button class="chip" data-pop="uniform">Uniform</button>
+        <button class="chip" data-pop="skew">Skewed</button>
+        <span style="margin-left:10px">sample size n = <b id="nlbl" class="num">5</b></span>
+        <input type="range" id="nSlider" min="2" max="30" value="5" style="width:120px">
+      </div>
+      <div class="ctl-row">
+        <button class="btn primary" id="draw1">draw 1 sample</button>
+        <button class="btn gold" id="draw1000">draw 1000</button>
+        <button class="btn" id="simReset">reset</button>
+      </div>
+      <div class="sim-grid">
+        <div class="canvas-box h-sim"><canvas id="sim"></canvas></div>
+        <div>
+          <div class="legend">
+            <div class="li"><span class="sw" style="background:var(--mean)"></span> true σ² = 1.00</div>
+            <div class="li"><span class="sw" style="background:var(--sd)"></span> ÷ (n−1) average → on σ²</div>
+            <div class="li"><span class="sw" style="background:var(--devNeg)"></span> ÷ n average → too low</div>
+            <div class="li"><span class="sw dash" style="border-color:var(--devNeg)"></span> where ÷ n lands: σ²·(n−1)/n</div>
+          </div>
+          <div class="sim-cap" id="simCap"></div>
+        </div>
       </div>
     </div>
-  </div>
-  <div class="note">The <b>÷ n</b> recipe is <b>biased low</b> — it averages out to <span data-tex="\sigma^2\frac{n-1}{n}"></span>, below the truth. Dividing by <b>n − 1</b> corrects it exactly (unbiased). The gap is <span data-tex="1/n"></span> — worst for small samples, vanishing as n grows.</div>
-  <p class="body"><b>The intuition:</b> the deviations are measured from the <i>sample’s own</i> mean, which sits as close to its points as mathematically possible — closer than the true population mean does. So the squared distances come out a touch too small. There’s also a <b>degrees-of-freedom</b> view: once you know the mean and any n − 1 points, the last point is forced (the deviations must sum to zero) — so only <b>n − 1</b> of them are free.</p>
+    <div class="note">Dividing by <b>n</b> is <b>biased low</b> — on average it lands at <span data-tex="\sigma^2\frac{n-1}{n}"></span>, short of the truth. Dividing by <b>n − 1</b> corrects it exactly. <b>Why?</b> The distances are measured from the <em>sample’s own</em> mean, which hugs its points more tightly than the true mean does — so the squares come out a touch too small, and n − 1 makes up the difference. (Equivalently: fix the mean and all but one point, and the last is forced — only <b>n − 1</b> are free to move.) The gap is biggest for tiny samples and fades as n grows.</div>
+  </section>
 
-  <!-- ===================== 5. SD ===================== -->
-  <div class="sec-head"><div class="eyebrow">measure 3 · spread, readable</div><h2>Standard deviation — back to a length</h2>
-    <p class="lead">Variance is an area in squared units. Take its square root and you get a length in the data’s own units: the typical distance of a point from the mean.</p></div>
-  <div class="formula-band sd">
-    <div class="def"><b>Definition.</b> <span data-tex="s=\sqrt{s^2}"></span> &nbsp;·&nbsp; population <span data-tex="\sigma=\sqrt{\sigma^2}"></span>. Same units as the data.</div>
-  </div>
-  <div class="card">
-    <div class="canvas-box h-sd"><canvas id="sdcanvas"></canvas></div>
-  </div>
-  <div class="note violet">Standard deviation is <b>not</b> the plain average of the distances. Because of the squaring, far points count more — so SD is a bit larger than the average gap (that plain average is a different quantity, the “mean absolute deviation”).</div>
-
-  <!-- ===================== 6. SAMPLE vs POPULATION ===================== -->
-  <div class="sec-head"><div class="eyebrow">two contexts</div><h2>Sample vs population</h2>
-    <p class="lead">Same ideas, two settings. The only changes are the notation and the divisor — highlighted below. The sample numbers are your best <i>estimates</i> of the population ones.</p></div>
-  <div class="twopanel">
-    <div class="panel">
-      <div class="tag">the data in front of you</div><h3>Sample</h3>
-      <div class="row"><div class="nm">mean</div><span data-tex="\bar{x}=\frac{1}{n}\sum x_i"></span></div>
-      <div class="row"><div class="nm">variance</div><span data-tex="s^2=\frac{1}{n-1}\sum (x_i-\bar{x})^2"></span></div>
-      <div class="row"><div class="nm">std deviation</div><span data-tex="s=\sqrt{s^2}"></span></div>
+  <!-- ===================== STEP 5 · SD ===================== -->
+  <section class="step">
+    <div class="kicker">Step 5 · <b>back to a number you can read</b></div>
+    <h2>Standard deviation: spread in plain units</h2>
+    <p class="body">Variance has one awkward quirk. Because we squared everything, its units are squared too — if scores are in points, variance is in <b>points²</b>. What does a “squared point” even mean? Nothing you can feel. So we undo the squaring with a square root, and land on the <b>standard deviation</b>.</p>
+    <div class="formula-band sd">
+      <b>The standard deviation.</b> <span data-tex="s=\sqrt{s^2}"></span> &nbsp;—&nbsp; the <b>typical distance</b> of a point from the mean, back in the data’s own units.
     </div>
-    <div class="panel">
-      <div class="tag">the whole world you’re after</div><h3>Population</h3>
-      <div class="row"><div class="nm">mean</div><span data-tex="\mu=\frac{1}{N}\sum x_i"></span></div>
-      <div class="row"><div class="nm">variance</div><span data-tex="\sigma^2=\frac{1}{N}\sum (x_i-\mu)^2"></span></div>
-      <div class="row"><div class="nm">std deviation</div><span data-tex="\sigma=\sqrt{\sigma^2}"></span></div>
-    </div>
-  </div>
+    <div class="card"><div class="canvas-box h-sd"><canvas id="sdcanvas"></canvas></div></div>
+    <div class="note violet">A subtle point: standard deviation is <b>not</b> the plain average of the distances. The squaring lets far points pull harder, so SD comes out a bit larger than the average gap. (That plain average has its own name — the “mean absolute deviation” — and it’s a different number.)</div>
+  </section>
 
-  <footer>part of <a href="https://samitstat.github.io/Stat_gn/">Stat_gn</a> · drag the points, step through the variance, run the n−1 simulation · ◐ toggles dark mode</footer>
+  <!-- ===================== STEP 6 · RECAP TABLE ===================== -->
+  <section class="step">
+    <div class="kicker">putting it together</div>
+    <h2>Three numbers, one picture</h2>
+    <p class="body">That’s the whole story. One question — “describe this data” — gave us a <b>center</b> and two views of its <b>spread</b>. Here they are side by side, with live values from the dataset up top. Read <b>down</b> a column for one measure; read <b>across</b> a row to compare.</p>
+    <div class="card cmp-wrap">
+      <table class="cmp">
+        <thead><tr><th></th>
+          <th class="c-mean">Mean<span class="glyph">x̄ · center</span></th>
+          <th class="c-var">Variance<span class="glyph">s² · spread, as area</span></th>
+          <th class="c-sd">Std deviation<span class="glyph">s · spread, as length</span></th>
+        </tr></thead>
+        <tbody>
+          <tr><th>In words</th><td>the balance point</td><td>average <b>squared</b> distance from the mean</td><td>typical distance from the mean</td></tr>
+          <tr><th>Formula</th>
+            <td><span data-tex="\bar{x}=\frac{1}{n}\sum x_i"></span></td>
+            <td><span data-tex="s^2=\frac{1}{n-1}\sum (x_i-\bar{x})^2"></span></td>
+            <td><span data-tex="s=\sqrt{s^2}"></span></td></tr>
+          <tr><th>Units</th><td>same as data</td><td><b>squared</b> (e.g. points²)</td><td>same as data (e.g. points)</td></tr>
+          <tr><th>This data</th>
+            <td class="c-mean liveval" id="tv-mean">—</td>
+            <td class="c-var liveval" id="tv-var">—</td>
+            <td class="c-sd liveval" id="tv-sd">—</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ===================== STEP 7 · SAMPLE vs POPULATION ===================== -->
+  <section class="step">
+    <div class="kicker">one last distinction</div>
+    <h2>Your sample vs the whole population</h2>
+    <p class="body">Everything above used the data <em>in front of you</em> — a <b>sample</b>. Usually that sample is a stand-in for a much bigger <b>population</b> you can’t fully measure. The ideas are identical; only the notation and that divisor change. Your sample numbers are your best <em>estimate</em> of the population’s.</p>
+    <div class="twopanel">
+      <div class="panel"><div class="tag">the data you have</div><h3>Sample</h3>
+        <div class="row"><div class="nm">mean</div><span data-tex="\bar{x}=\frac{1}{n}\sum x_i"></span></div>
+        <div class="row"><div class="nm">variance</div><span data-tex="s^2=\frac{1}{n-1}\sum (x_i-\bar{x})^2"></span></div>
+        <div class="row"><div class="nm">std deviation</div><span data-tex="s=\sqrt{s^2}"></span></div>
+      </div>
+      <div class="panel"><div class="tag">the whole world you’re after</div><h3>Population</h3>
+        <div class="row"><div class="nm">mean</div><span data-tex="\mu=\frac{1}{N}\sum x_i"></span></div>
+        <div class="row"><div class="nm">variance</div><span data-tex="\sigma^2=\frac{1}{N}\sum (x_i-\mu)^2"></span></div>
+        <div class="row"><div class="nm">std deviation</div><span data-tex="\sigma=\sqrt{\sigma^2}"></span></div>
+      </div>
+    </div>
+    <div class="note teal">One bridge between them you’ll meet again: the population mean <span data-tex="\mu"></span> is also the <b>expected value</b> <span data-tex="E[X]=\mu"></span>, and the population variance is <span data-tex="\sigma^2=E[(X-\mu)^2]"></span>.</div>
+  </section>
+
+  <footer>part of <a href="https://samitstat.github.io/Stat_gn/">Stat_gn</a> · drag the dots · step through the variance · run the n−1 simulation · ◐ dark mode</footer>
 </div>
 
 <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
@@ -294,10 +289,10 @@ const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
 const PAL = {
   light:{ ink:'#1C1B1A', soft:'#6A6560', faint:'#B7AE9F', line:'#E7DFD2',
     mean:'#2E6F6A', devNeg:'#3B6FB0', devPos:'#C25A3C', variance:'#B07F12', sd:'#7A4FB0', live:'#E4572E', good:'#2E8B57',
-    disk:'#3A352E', edge:'#FFFFFF', varFill:'rgba(176,127,18,.20)', sdFill:'rgba(122,79,176,.16)' },
+    disk:'#3A352E', edge:'#FFFFFF', varFill:'rgba(176,127,18,.20)' },
   dark:{ ink:'#EDE7DB', soft:'#A39C8E', faint:'#6E675B', line:'#322E25',
     mean:'#5BBBB1', devNeg:'#6BA3E0', devPos:'#E0876A', variance:'#E0B24A', sd:'#B596E6', live:'#FF7A52', good:'#5FC98C',
-    disk:'#EDE7DB', edge:'#1E1C17', varFill:'rgba(224,178,74,.18)', sdFill:'rgba(181,150,230,.18)' }
+    disk:'#EDE7DB', edge:'#1E1C17', varFill:'rgba(224,178,74,.18)' }
 };
 let theme = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark':'light';
 let C = PAL[theme];
@@ -308,8 +303,8 @@ function niceTicks(x0,x1,target){ const span=x1-x0, raw=span/target, mag=Math.po
   const step=([1,2,2.5,5,10].find(s=>raw<=s*mag)||10)*mag, t=[];
   for(let v=Math.ceil(x0/step)*step; v<=x1+1e-9; v+=step) t.push(+v.toFixed(6)); return t; }
 
-/* ---------------- shared dataset + stats ---------------- */
-let data=[2,4.5,6,7.5,10], dom={x0:0,x1:12}, showDev=false;
+/* shared dataset */
+let data=[2,4.5,6,7.5,10], dom={x0:0,x1:12};
 const mean=a=>a.reduce((s,x)=>s+x,0)/a.length;
 function stat(){ const n=data.length,m=mean(data); let ss=0; for(const x of data) ss+=(x-m)*(x-m);
   const v=ss/Math.max(1,n-1), sd=Math.sqrt(v); return {n,m,ss,v,sd}; }
@@ -322,16 +317,16 @@ function refreshAll(){ const s=stat();
   document.getElementById('r-var').textContent=fmt(s.v,2);
   document.getElementById('r-sd').textContent=fmt(s.sd,2);
   let L=0,R=0; for(const x of data){ if(x<s.m)L+=s.m-x; else R+=x-s.m; }
-  document.getElementById('balance').innerHTML='pull: <b style="color:var(--devNeg)">'+fmt(L,1)+'</b> = <b style="color:var(--devPos)">'+fmt(R,1)+'</b> → balanced';
+  document.getElementById('balance').innerHTML='balance: <b style="color:var(--devNeg)">'+fmt(L,1)+'</b> = <b style="color:var(--devPos)">'+fmt(R,1)+'</b>';
   drawStage(); drawDiss(); drawSD();
 }
 
-/* ---------------- stage canvas (mean / balance) ---------------- */
+/* stage */
 const cv=document.getElementById('stage'), cx=cv.getContext('2d'); let SW=0,SH=0,AX=0,dragIdx=-1,raf=null,animMean=null;
 const ML=42,MR=22;
 const sd2p=x=>ML+(x-dom.x0)/(dom.x1-dom.x0)*(SW-ML-MR);
 const sp2d=px=>dom.x0+(px-ML)/(SW-ML-MR)*(dom.x1-dom.x0);
-function resizeStage(){ const s=sizeCanvas(cv,cx); SW=s.w; SH=s.h; AX=SH-52; }
+function resizeStage(){ const s=sizeCanvas(cv,cx); SW=s.w; SH=s.h; AX=SH-50; }
 function tick(){ raf=null; const m=mean(data); if(animMean===null)animMean=m; animMean+=(m-animMean)*0.25; drawStage();
   if(dragIdx>=0||Math.abs(m-animMean)>(dom.x1-dom.x0)*0.0006) raf=requestAnimationFrame(tick); }
 function reqStage(){ if(!raf) raf=requestAnimationFrame(tick); }
@@ -340,17 +335,10 @@ function drawStage(){ if(!SW) return; const s=stat(); cx.clearRect(0,0,SW,SH);
   cx.fillStyle=C.faint; cx.font='11px "IBM Plex Mono",monospace'; cx.textAlign='center'; cx.textBaseline='top';
   for(const t of niceTicks(dom.x0,dom.x1,6)){ const px=sd2p(t); if(px<ML-1||px>SW-MR+1)continue;
     cx.strokeStyle=C.line; cx.beginPath(); cx.moveTo(px,AX); cx.lineTo(px,AX+5); cx.stroke(); cx.fillStyle=C.faint; cx.fillText(fmt(t,Number.isInteger(t)?0:1),px,AX+8); }
-  // deviations
-  if(showDev){ cx.lineWidth=2.5; cx.textBaseline='bottom';
-    data.forEach(x=>{ const d=x-s.m; if(Math.abs(d)<1e-9)return; const px=sd2p(x),pm=sd2p(s.m),col=d<0?C.devNeg:C.devPos;
-      cx.strokeStyle=col; cx.beginPath(); cx.moveTo(pm,AX); cx.lineTo(px,AX); cx.stroke();
-      cx.fillStyle=col; cx.font='600 11px "IBM Plex Mono",monospace'; cx.fillText((d>0?'+':'')+fmt(d,1),(px+pm)/2,AX-4); }); }
-  // fulcrum
   const fx=sd2p(animMean===null?s.m:animMean);
-  cx.strokeStyle=C.mean; cx.globalAlpha=.4; cx.lineWidth=1; cx.setLineDash([3,4]); cx.beginPath(); cx.moveTo(sd2p(s.m),26); cx.lineTo(sd2p(s.m),AX); cx.stroke(); cx.setLineDash([]); cx.globalAlpha=1;
+  cx.strokeStyle=C.mean; cx.globalAlpha=.4; cx.lineWidth=1; cx.setLineDash([3,4]); cx.beginPath(); cx.moveTo(sd2p(s.m),24); cx.lineTo(sd2p(s.m),AX); cx.stroke(); cx.setLineDash([]); cx.globalAlpha=1;
   cx.fillStyle=C.mean; cx.beginPath(); cx.moveTo(fx,AX+2); cx.lineTo(fx-11,AX+20); cx.lineTo(fx+11,AX+20); cx.closePath(); cx.fill();
-  cx.fillStyle=C.mean; cx.font='600 12px "IBM Plex Mono",monospace'; cx.textAlign='center'; cx.textBaseline='top'; cx.fillText('x̄ = '+fmt(s.m,2),fx,AX+23);
-  // disks
+  cx.fillStyle=C.mean; cx.font='600 12px "IBM Plex Mono",monospace'; cx.textAlign='center'; cx.textBaseline='top'; cx.fillText('mean = '+fmt(s.m,2),fx,AX+23);
   data.forEach((x,i)=>{ const px=sd2p(x),r=(i===dragIdx)?11:9; cx.beginPath(); cx.arc(px,AX,r,0,7);
     cx.fillStyle=(i===dragIdx)?C.live:C.disk; cx.fill(); cx.lineWidth=2; cx.strokeStyle=C.edge; cx.stroke(); });
 }
@@ -362,7 +350,23 @@ cv.addEventListener('pointermove',e=>{ if(dragIdx<0)return; const r=cv.getBoundi
 function endDrag(){ if(dragIdx>=0){dragIdx=-1; reqStage();} }
 cv.addEventListener('pointerup',endDrag); cv.addEventListener('pointercancel',endDrag);
 
-/* ---------------- variance dissection ---------------- */
+/* motivation: same mean, different spread */
+const mo=document.getElementById('motiv'), moc=mo.getContext('2d'); let MOW=0,MOH=0;
+const SETA=[82,84,85,86,88], SETB=[70,70,85,100,100];
+function sdOf(a){ const m=mean(a); let ss=0; for(const x of a) ss+=(x-m)*(x-m); return Math.sqrt(ss/(a.length-1)); }
+function resizeMotiv(){ const s=sizeCanvas(mo,moc); MOW=s.w; MOH=s.h; }
+function drawMotiv(){ if(!MOW) return; moc.clearRect(0,0,MOW,MOH); const L=46,R=22,x0=64,x1=106, pw=MOW-L-R;
+  const m2=x=>L+(x-x0)/(x1-x0)*pw, yA=MOH*0.40, yB=MOH*0.82;
+  moc.strokeStyle=C.mean; moc.lineWidth=1.5; moc.setLineDash([4,4]); moc.beginPath(); moc.moveTo(m2(85),16); moc.lineTo(m2(85),MOH-10); moc.stroke(); moc.setLineDash([]);
+  moc.fillStyle=C.mean; moc.font='600 11px "IBM Plex Mono",monospace'; moc.textAlign='center'; moc.textBaseline='bottom'; moc.fillText('mean = 85 for both',m2(85),15);
+  function row(a,y,label){ moc.strokeStyle=C.line; moc.lineWidth=1; moc.beginPath(); moc.moveTo(L,y); moc.lineTo(MOW-R,y); moc.stroke();
+    moc.fillStyle=C.soft; moc.font='12px "IBM Plex Mono",monospace'; moc.textAlign='left'; moc.textBaseline='alphabetic'; moc.fillText(label,L,y-16);
+    a.forEach(x=>{ moc.beginPath(); moc.arc(m2(x),y,6,0,7); moc.fillStyle=C.disk; moc.fill(); moc.lineWidth=2; moc.strokeStyle=C.edge; moc.stroke(); }); }
+  row(SETA,yA,'Class A — bunched up   (SD ≈ '+fmt(sdOf(SETA),1)+')');
+  row(SETB,yB,'Class B — split apart   (SD = '+fmt(sdOf(SETB),0)+')');
+}
+
+/* variance dissection */
 const dc=document.getElementById('diss'), dcx=dc.getContext('2d'); let DW=0,DH=0,DAX=0,step=1;
 const dd2p=x=>ML+(x-dom.x0)/(dom.x1-dom.x0)*(DW-ML-MR);
 function resizeDiss(){ const s=sizeCanvas(dc,dcx); DW=s.w; DH=s.h; DAX=DH-40; }
@@ -370,145 +374,107 @@ function setStep(k){ step=k; document.querySelectorAll('.step-btn').forEach(b=>b
   const map={1:'kt-dev',2:'kt-sq',3:'kt-sum',4:'kt-div'};
   ['kt-dev','kt-sq','kt-sum','kt-div'].forEach(c=>document.querySelectorAll('.'+c).forEach(el=>el.classList.toggle('kt-hl',c===map[k])));
   const s=stat();
-  const caps={
-    1:`<b>Deviation</b> (xᵢ − x̄): how far each point sits from the mean, with a sign. Blue = below, clay = above. They always sum to <b>zero</b>.`,
-    2:`<b>Square each one</b>: (xᵢ − x̄)². Signs vanish and a far point’s square dwarfs a near one’s — here the ±4 squares (area 16) are ~7× the ±1.5 squares (area 2.25).`,
-    3:`<b>Add them up</b>: Σ(xᵢ − x̄)² = <b>${fmt(s.ss,2)}</b>. One pile of total squared area.`,
-    4:`<b>Average over n − 1 = ${s.n-1}</b>: ${fmt(s.ss,2)} ÷ ${s.n-1} = <b>${fmt(s.v,2)}</b>. That’s the variance — the typical squared distance.`
-  };
+  const caps={ 1:`<b>Distance from the mean</b>, (xᵢ − x̄): how far each point sits, with a sign. Blue = below, clay = above. Notice they sum to <b>zero</b> — which is why raw distances can’t measure spread.`,
+    2:`<b>Square each distance</b>, (xᵢ − x̄)². Signs disappear, and a far point’s square dwarfs a near one’s — the ±4 squares (area 16) are ~7× the ±1.5 squares (area 2.25).`,
+    3:`<b>Add the squares up</b>: Σ(xᵢ − x̄)² = <b>${fmt(s.ss,2)}</b>. One total pile of squared area.`,
+    4:`<b>Average over n − 1 = ${s.n-1}</b>: ${fmt(s.ss,2)} ÷ ${s.n-1} = <b>${fmt(s.v,2)}</b>. That’s the variance — the typical squared distance from the mean.` };
   document.getElementById('dissCap').innerHTML=caps[k]; drawDiss();
 }
 function drawDiss(){ if(!DW) return; const s=stat(); dcx.clearRect(0,0,DW,DH);
   const devs=data.map(x=>x-s.m), ppu=(DW-ML-MR)/(dom.x1-dom.x0), maxAbs=Math.max(.0001,...devs.map(Math.abs));
   const availTop=DAX-30, sqScale=Math.min(1,availTop/(maxAbs*ppu));
-  // squares (steps>=2)
   if(step>=2){ dcx.textBaseline='middle'; dcx.textAlign='center';
     data.forEach((x,i)=>{ const dv=Math.abs(devs[i]); if(dv<1e-9)return; const side=dv*ppu*sqScale,px=dd2p(x),top=DAX-side-6;
       dcx.fillStyle=C.varFill; dcx.strokeStyle=C.variance; dcx.lineWidth=1; dcx.fillRect(px-side/2,top,side,side); dcx.strokeRect(px-side/2,top,side,side);
       if(side>24){ dcx.fillStyle=C.variance; dcx.font='600 11px "IBM Plex Mono",monospace'; dcx.fillText(fmt(devs[i]*devs[i],2),px,top+side/2); } }); }
-  // axis
   dcx.strokeStyle=C.line; dcx.lineWidth=1.5; dcx.beginPath(); dcx.moveTo(ML,DAX); dcx.lineTo(DW-MR,DAX); dcx.stroke();
-  // mean line
   dcx.strokeStyle=C.mean; dcx.globalAlpha=.5; dcx.setLineDash([3,4]); dcx.beginPath(); dcx.moveTo(dd2p(s.m),18); dcx.lineTo(dd2p(s.m),DAX); dcx.stroke(); dcx.setLineDash([]); dcx.globalAlpha=1;
   dcx.fillStyle=C.mean; dcx.font='600 11px "IBM Plex Mono",monospace'; dcx.textAlign='center'; dcx.textBaseline='bottom'; dcx.fillText('x̄',dd2p(s.m),16);
-  // deviation arrows (step 1) ; faded for later steps
   dcx.lineWidth=2.5; dcx.textBaseline='bottom';
   data.forEach((x,i)=>{ if(Math.abs(devs[i])<1e-9)return; const px=dd2p(x),pm=dd2p(s.m),col=devs[i]<0?C.devNeg:C.devPos;
-    dcx.globalAlpha=(step===1)?1:0.32; dcx.strokeStyle=col; dcx.beginPath(); dcx.moveTo(pm,DAX); dcx.lineTo(px,DAX); dcx.stroke();
+    dcx.globalAlpha=(step===1)?1:0.3; dcx.strokeStyle=col; dcx.beginPath(); dcx.moveTo(pm,DAX); dcx.lineTo(px,DAX); dcx.stroke();
     if(step===1){ dcx.fillStyle=col; dcx.font='600 11px "IBM Plex Mono",monospace'; dcx.textAlign='center'; dcx.fillText((devs[i]>0?'+':'')+fmt(devs[i],1),(px+pm)/2,DAX-4); } dcx.globalAlpha=1; });
-  // disks
   data.forEach(x=>{ const px=dd2p(x); dcx.beginPath(); dcx.arc(px,DAX,7,0,7); dcx.fillStyle=C.disk; dcx.fill(); dcx.lineWidth=2; dcx.strokeStyle=C.edge; dcx.stroke(); });
-  // sum / average banner (steps 3,4)
-  if(step>=3){ const txt = step===3 ? 'Σ(xᵢ−x̄)² = '+fmt(s.ss,2) : 'Σ ÷ (n−1) = '+fmt(s.ss,2)+' ÷ '+(s.n-1)+' = '+fmt(s.v,2)+'  (variance)';
+  if(step>=3){ const txt=step===3?'Σ(xᵢ−x̄)² = '+fmt(s.ss,2):'Σ ÷ (n−1) = '+fmt(s.ss,2)+' ÷ '+(s.n-1)+' = '+fmt(s.v,2)+'  (variance)';
     dcx.fillStyle=C.variance; dcx.font='600 14px "IBM Plex Mono",monospace'; dcx.textAlign='center'; dcx.textBaseline='top'; dcx.fillText(txt,DW/2,8); }
 }
 
-/* ---------------- SD: area -> length ---------------- */
+/* SD: area -> length */
 const sc=document.getElementById('sdcanvas'), scx=sc.getContext('2d'); let CW=0,CH=0;
 function resizeSD(){ const s=sizeCanvas(sc,scx); CW=s.w; CH=s.h; }
 function drawSD(){ if(!CW) return; const s=stat(); scx.clearRect(0,0,CW,CH);
-  const side=Math.min(CH-70, CW*0.30); const sqx=40, sqy=20;
-  // variance square (area)
+  const side=Math.min(CH-80, CW*0.28), sqx=40, sqy=20;
   scx.fillStyle=C.varFill; scx.strokeStyle=C.variance; scx.lineWidth=1.5; scx.fillRect(sqx,sqy,side,side); scx.strokeRect(sqx,sqy,side,side);
   scx.fillStyle=C.variance; scx.font='600 13px "IBM Plex Mono",monospace'; scx.textAlign='center'; scx.textBaseline='middle';
-  scx.fillText('area = s²', sqx+side/2, sqy+side/2-8); scx.fillText('= '+fmt(s.v,2)+' units²', sqx+side/2, sqy+side/2+10);
-  // arrow: square root -> a length
-  const ay=sqy+side+30, lx0=sqx, lpx=Math.min((CW-90), CW*0.55);
+  scx.fillText('variance = '+fmt(s.v,2), sqx+side/2, sqy+side/2-8); scx.fillText('(units²)', sqx+side/2, sqy+side/2+10);
+  const ay=sqy+side+34;
   scx.strokeStyle=C.soft; scx.setLineDash([4,4]); scx.lineWidth=1.2; scx.beginPath(); scx.moveTo(sqx+side/2,sqy+side); scx.lineTo(sqx+side/2,ay-6); scx.stroke(); scx.setLineDash([]);
-  scx.fillStyle=C.sd; scx.font='600 13px "IBM Plex Mono",monospace'; scx.textAlign='left'; scx.textBaseline='bottom';
-  scx.fillText('√(area)  →  a length  s = '+fmt(s.sd,2)+' units', sqx, ay-10);
-  // SD length bar
-  const barLen = side; // visually the side of the square laid down
-  scx.strokeStyle=C.sd; scx.lineWidth=4; scx.beginPath(); scx.moveTo(lx0,ay+16); scx.lineTo(lx0+barLen,ay+16); scx.stroke();
-  scx.fillStyle=C.sd; scx.beginPath(); scx.arc(lx0,ay+16,4,0,7); scx.arc(lx0+barLen,ay+16,4,0,7); scx.fill();
-  scx.textAlign='center'; scx.textBaseline='top'; scx.font='600 12px "IBM Plex Mono",monospace'; scx.fillText('s = '+fmt(s.sd,2),lx0+barLen/2,ay+22);
+  scx.fillStyle=C.sd; scx.font='600 13px "IBM Plex Mono",monospace'; scx.textAlign='left'; scx.textBaseline='bottom'; scx.fillText('take the square root →', sqx, ay-10);
+  scx.strokeStyle=C.sd; scx.lineWidth=4; scx.beginPath(); scx.moveTo(sqx,ay+16); scx.lineTo(sqx+side,ay+16); scx.stroke();
+  scx.fillStyle=C.sd; scx.beginPath(); scx.arc(sqx,ay+16,4,0,7); scx.arc(sqx+side,ay+16,4,0,7); scx.fill();
+  scx.textAlign='center'; scx.textBaseline='top'; scx.font='600 12px "IBM Plex Mono",monospace'; scx.fillText('SD = '+fmt(s.sd,2)+' (units)',sqx+side/2,ay+22);
+  const tx=sqx+side+34;
   scx.fillStyle=C.soft; scx.font='13px "IBM Plex Mono",monospace'; scx.textAlign='left'; scx.textBaseline='middle';
-  scx.fillText('the side of the variance square,', lpx+20, sqy+side*0.35);
-  scx.fillText('laid back on the data’s axis —', lpx+20, sqy+side*0.35+20);
-  scx.fillText('the typical distance from the mean.', lpx+20, sqy+side*0.35+40);
+  scx.fillText('the side of the variance', tx, sqy+side*0.4);
+  scx.fillText('square, laid on the axis —', tx, sqy+side*0.4+19);
+  scx.fillText('a typical distance, in', tx, sqy+side*0.4+38);
+  scx.fillText('the data’s own units.', tx, sqy+side*0.4+57);
 }
 
-/* ---------------- n-1 simulation ---------------- */
+/* n-1 simulation */
 const mc=document.getElementById('sim'), mcx=mc.getContext('2d'); let MW=0,MH=0;
-let popKind='normal', simN=5, acc={J:0,sumN:0,sumN1:0}, hist=[], busy=false;
-const SIG2=1;
+let popKind='normal', simN=5, acc={J:0,sumN:0,sumN1:0}, hist=[], busy=false; const SIG2=1;
 function randNorm(){ let u=0,v=0; while(u===0)u=Math.random(); while(v===0)v=Math.random(); return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v); }
-function drawPop(){ // each scaled to mean ~ , variance = 1
-  if(popKind==='normal') return 5+randNorm();                       // σ²=1
-  if(popKind==='uniform'){ const h=Math.sqrt(3); return 5 + (Math.random()*2-1)*h; } // var=(2h)²/12=1
-  // skew: exponential rate 1 (var=1), shifted
-  return 4 + (-Math.log(1-Math.random()));                          // exp(1): var=1
-}
+function drawPop(){ if(popKind==='normal') return 5+randNorm(); if(popKind==='uniform') return 5+(Math.random()*2-1)*Math.sqrt(3); return 4+(-Math.log(1-Math.random())); }
 function oneSample(){ let s=0; const xs=new Array(simN); for(let i=0;i<simN;i++){ const x=drawPop(); xs[i]=x; s+=x; }
   const m=s/simN; let ss=0; for(let i=0;i<simN;i++){ const d=xs[i]-m; ss+=d*d; }
-  const vN=ss/simN, vN1=ss/(simN-1); acc.J++; acc.sumN+=vN; acc.sumN1+=vN1;
+  acc.J++; acc.sumN+=ss/simN; acc.sumN1+=ss/(simN-1);
   const J=acc.J; if(J<60||J%Math.ceil(J/220)===0||J===1) hist.push({J,aN:acc.sumN/J,aN1:acc.sumN1/J}); }
 function simResetAll(){ acc={J:0,sumN:0,sumN1:0}; hist=[]; drawSim(); updateSimCap(); }
 function resizeSim(){ const s=sizeCanvas(mc,mcx); MW=s.w; MH=s.h; }
-function drawSim(){ if(!MW) return; const L=46,R=14,T=14,B=34, pw=MW-L-R, ph=MH-T-B;
-  mcx.clearRect(0,0,MW,MH);
-  const jmax=Math.max(20,acc.J), yMax=1.8;
-  const jx=J=>L+(Math.log10(Math.max(1,J)))/(Math.log10(jmax))*pw;
-  const vy=v=>T+ph-(v/yMax)*ph;
-  // grid + y ticks
+function drawSim(){ if(!MW) return; const L=46,R=14,T=14,B=34, pw=MW-L-R, ph=MH-T-B; mcx.clearRect(0,0,MW,MH);
+  const jmax=Math.max(20,acc.J), yMax=1.8, jx=J=>L+(Math.log10(Math.max(1,J)))/(Math.log10(jmax))*pw, vy=v=>T+ph-(v/yMax)*ph;
   mcx.strokeStyle=C.line; mcx.fillStyle=C.faint; mcx.font='10px "IBM Plex Mono",monospace'; mcx.textAlign='right'; mcx.textBaseline='middle';
-  for(let v=0; v<=yMax+1e-9; v+=0.5){ const y=vy(v); mcx.globalAlpha=.5; mcx.beginPath(); mcx.moveTo(L,y); mcx.lineTo(MW-R,y); mcx.stroke(); mcx.globalAlpha=1; mcx.fillText(v.toFixed(1),L-6,y); }
-  mcx.textAlign='center'; mcx.textBaseline='top'; mcx.fillText('samples drawn (log)', L+pw/2, MH-16);
-  // biased target dashed
+  for(let v=0;v<=yMax+1e-9;v+=0.5){ const y=vy(v); mcx.globalAlpha=.5; mcx.beginPath(); mcx.moveTo(L,y); mcx.lineTo(MW-R,y); mcx.stroke(); mcx.globalAlpha=1; mcx.fillText(v.toFixed(1),L-6,y); }
+  mcx.textAlign='center'; mcx.textBaseline='top'; mcx.fillText('samples drawn (log scale)',L+pw/2,MH-16);
   const bt=SIG2*(simN-1)/simN;
   mcx.strokeStyle=C.devNeg; mcx.setLineDash([5,4]); mcx.globalAlpha=.7; mcx.lineWidth=1.3; mcx.beginPath(); mcx.moveTo(L,vy(bt)); mcx.lineTo(MW-R,vy(bt)); mcx.stroke(); mcx.setLineDash([]); mcx.globalAlpha=1;
-  // true sigma2 line
   mcx.strokeStyle=C.mean; mcx.lineWidth=2; mcx.beginPath(); mcx.moveTo(L,vy(SIG2)); mcx.lineTo(MW-R,vy(SIG2)); mcx.stroke();
-  // running-average curves
-  function curve(key,col){ mcx.strokeStyle=col; mcx.lineWidth=2; mcx.beginPath();
-    hist.forEach((p,i)=>{ const X=jx(p.J),Y=vy(p[key]); i?mcx.lineTo(X,Y):mcx.moveTo(X,Y); }); mcx.stroke(); }
+  function curve(key,col){ mcx.strokeStyle=col; mcx.lineWidth=2; mcx.beginPath(); hist.forEach((p,i)=>{ const X=jx(p.J),Y=vy(p[key]); i?mcx.lineTo(X,Y):mcx.moveTo(X,Y); }); mcx.stroke(); }
   if(hist.length){ curve('aN',C.devNeg); curve('aN1',C.sd);
     [['aN1',C.sd],['aN',C.devNeg]].forEach(([k,col])=>{ const p=hist[hist.length-1]; mcx.fillStyle=col; mcx.beginPath(); mcx.arc(jx(p.J),vy(p[k]),4,0,7); mcx.fill(); }); }
 }
-function updateSimCap(){ const bt=SIG2*(simN-1)/simN, pct=(100/simN);
-  const el=document.getElementById('simCap');
-  if(acc.J===0){ el.innerHTML=`Draw samples of size n=${simN} from a population with true σ²=1.00. Watch where each recipe’s average lands.`; return; }
-  el.innerHTML=`After <b>${acc.J.toLocaleString()}</b> samples: ÷(n−1) averages <b style="color:var(--sd)">${fmt(acc.sumN1/acc.J,3)}</b> (on σ²); ÷n averages <b style="color:var(--devNeg)">${fmt(acc.sumN/acc.J,3)}</b> (toward ${fmt(bt,3)}). The ÷n recipe is biased low by 1/n = <b>${fmt(pct,1)}%</b>.`;
-}
+function updateSimCap(){ const bt=SIG2*(simN-1)/simN, pct=100/simN, el=document.getElementById('simCap');
+  if(acc.J===0){ el.innerHTML=`Draw samples of size n=${simN} from a population whose true variance is σ²=1.00, and watch where each recipe’s running average settles.`; return; }
+  el.innerHTML=`After <b>${acc.J.toLocaleString()}</b> samples: ÷(n−1) averages <b style="color:var(--sd)">${fmt(acc.sumN1/acc.J,3)}</b> (on σ²); ÷n averages <b style="color:var(--devNeg)">${fmt(acc.sumN/acc.J,3)}</b> (heading to ${fmt(bt,3)}). ÷n is biased low by 1/n = <b>${fmt(pct,1)}%</b>.`; }
 function runMany(total){ if(busy)return; busy=true; let done=0;
   (function chunk(){ const end=Math.min(done+200,total); for(;done<end;done++) oneSample(); drawSim(); updateSimCap();
-    if(done<total && !reduced) requestAnimationFrame(chunk); else { if(done<total){ for(;done<total;done++) oneSample(); drawSim(); updateSimCap(); } busy=false; } })(); }
+    if(done<total && !reduced) requestAnimationFrame(chunk); else { for(;done<total;done++) oneSample(); drawSim(); updateSimCap(); busy=false; } })(); }
 
-/* ---------------- presets / controls ---------------- */
+/* controls */
 function loadPreset(name){ if(name==='random'){ const n=5+Math.floor(Math.random()*3); data=Array.from({length:n},()=>+(1+Math.random()*11).toFixed(1)); }
   else if(name==='class') data=[70,70,70,100,100,100]; else data=[2,4.5,6,7.5,10];
   fitDomain(); animMean=null; refreshAll(); reqStage(); }
 document.querySelectorAll('.chip[data-preset]').forEach(b=>b.addEventListener('click',()=>loadPreset(b.dataset.preset)));
-document.getElementById('devChip').addEventListener('click',function(){ showDev=!showDev; this.classList.toggle('on',showDev); drawStage(); });
 document.querySelectorAll('.step-btn').forEach(b=>b.addEventListener('click',()=>setStep(+b.dataset.step)));
-document.querySelectorAll('.chip[data-pop]').forEach(b=>b.addEventListener('click',()=>{ popKind=b.dataset.pop;
-  document.querySelectorAll('.chip[data-pop]').forEach(x=>x.classList.toggle('on',x===b)); simResetAll(); }));
+document.querySelectorAll('.chip[data-pop]').forEach(b=>b.addEventListener('click',()=>{ popKind=b.dataset.pop; document.querySelectorAll('.chip[data-pop]').forEach(x=>x.classList.toggle('on',x===b)); simResetAll(); }));
 document.getElementById('nSlider').addEventListener('input',function(){ simN=+this.value; document.getElementById('nlbl').textContent=simN; simResetAll(); });
 document.getElementById('draw1').addEventListener('click',()=>{ oneSample(); drawSim(); updateSimCap(); });
 document.getElementById('draw1000').addEventListener('click',()=>runMany(1000));
 document.getElementById('simReset').addEventListener('click',simResetAll);
 
-/* ---------------- theme ---------------- */
+/* theme */
 function applyTheme(){ document.documentElement.setAttribute('data-theme',theme); C=PAL[theme];
-  document.getElementById('themeToggle').textContent=theme==='dark'?'☀':'◐'; drawStage(); drawDiss(); drawSD(); drawSim(); }
+  document.getElementById('themeToggle').textContent=theme==='dark'?'☀':'◐'; drawStage(); drawMotiv(); drawDiss(); drawSD(); drawSim(); }
 document.getElementById('themeToggle').addEventListener('click',()=>{ theme=theme==='dark'?'light':'dark'; applyTheme(); });
 
-/* ---------------- KaTeX render + init ---------------- */
-function renderMath(){
-  try{
-    document.querySelectorAll('[data-tex]').forEach(el=>{
-      katex.render(el.getAttribute('data-tex'), el, {throwOnError:false, trust:true, strict:'ignore', displayMode:false});
-    });
-  }catch(e){ /* fallback: leave text */ }
-}
-function init(){
-  document.documentElement.setAttribute('data-theme',theme);
-  document.getElementById('themeToggle').textContent=theme==='dark'?'☀':'◐';
+/* KaTeX + init */
+function renderMath(){ try{ document.querySelectorAll('[data-tex]').forEach(el=>{ katex.render(el.getAttribute('data-tex'),el,{throwOnError:false,trust:true,strict:'ignore',displayMode:false}); }); }catch(e){} }
+function init(){ document.documentElement.setAttribute('data-theme',theme); document.getElementById('themeToggle').textContent=theme==='dark'?'☀':'◐';
   if(window.katex) renderMath(); else window.addEventListener('load',renderMath);
-  fitDomain(); resizeStage(); resizeDiss(); resizeSD(); resizeSim();
-  refreshAll(); setStep(1); drawSim(); updateSimCap();
-  let to; addEventListener('resize',()=>{ clearTimeout(to); to=setTimeout(()=>{ resizeStage(); resizeDiss(); resizeSD(); resizeSim(); refreshAll(); drawSim(); },120); });
-}
+  fitDomain(); resizeStage(); resizeMotiv(); resizeDiss(); resizeSD(); resizeSim();
+  refreshAll(); drawMotiv(); setStep(1); drawSim(); updateSimCap();
+  let to; addEventListener('resize',()=>{ clearTimeout(to); to=setTimeout(()=>{ resizeStage(); resizeMotiv(); resizeDiss(); resizeSD(); resizeSim(); refreshAll(); drawMotiv(); drawSim(); },120); }); }
 if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',init); else init();
 </script>
 </body>
